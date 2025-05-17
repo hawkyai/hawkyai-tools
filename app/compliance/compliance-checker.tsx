@@ -16,6 +16,16 @@ import { detectAdType, type AdTypeResult } from "@/lib/ad-type-detector"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useRouter } from "next/navigation"
 
+// Analytics tracking function
+const trackEvent = (eventName: string, eventData: Record<string, any> = {}) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      event: eventName,
+      ...eventData
+    });
+  }
+}
+
 type ComplianceStandard = "asci" | "wcag" | "irdai" | "finance"
 type AnalysisState = "idle" | "validating" | "loading" | "complete"
 
@@ -39,6 +49,9 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
   useEffect(() => {
     if (selectedStandard !== defaultStandard) {
       router.push(`/${selectedStandard}`)
+      trackEvent('compliance_standard_changed', {
+        standard: selectedStandard
+      });
     }
   }, [selectedStandard, defaultStandard, router])
 
@@ -48,11 +61,19 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       // Validate file type
       if (!selectedFile.type.startsWith('image/')) {
         setError('Please upload an image file')
+        trackEvent('compliance_file_error', {
+          error_type: 'invalid_file_type',
+          file_type: selectedFile.type
+        });
         return
       }
       // Validate file size (max 10MB)
       if (selectedFile.size > 10 * 1024 * 1024) {
         setError('File size should be less than 10MB')
+        trackEvent('compliance_file_error', {
+          error_type: 'file_too_large',
+          file_size: selectedFile.size
+        });
         return
       }
       setFile(selectedFile)
@@ -60,6 +81,10 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       setPreviewUrl(url)
       setAdTypeError(null)
       setError(null)
+      trackEvent('compliance_file_uploaded', {
+        file_type: selectedFile.type,
+        file_size: selectedFile.size
+      });
     }
   }
 
@@ -70,11 +95,21 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       // Validate file type
       if (!droppedFile.type.startsWith('image/')) {
         setError('Please upload an image file')
+        trackEvent('compliance_file_error', {
+          error_type: 'invalid_file_type',
+          file_type: droppedFile.type,
+          upload_method: 'drag_and_drop'
+        });
         return
       }
       // Validate file size (max 10MB)
       if (droppedFile.size > 10 * 1024 * 1024) {
         setError('File size should be less than 10MB')
+        trackEvent('compliance_file_error', {
+          error_type: 'file_too_large',
+          file_size: droppedFile.size,
+          upload_method: 'drag_and_drop'
+        });
         return
       }
       setFile(droppedFile)
@@ -82,6 +117,11 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       setPreviewUrl(url)
       setAdTypeError(null)
       setError(null)
+      trackEvent('compliance_file_uploaded', {
+        file_type: droppedFile.type,
+        file_size: droppedFile.size,
+        upload_method: 'drag_and_drop'
+      });
     }
   }
 
@@ -147,6 +187,9 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
         description: "Please upload an image to analyze",
         variant: "destructive",
       })
+      trackEvent('compliance_analysis_error', {
+        error_type: 'no_file_selected'
+      });
       return
     }
 
@@ -156,9 +199,21 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
 
     // Validate ad type for selected standard
     const isValid = await validateAdTypeForStandard()
-    if (!isValid) return
+    if (!isValid) {
+      trackEvent('compliance_analysis_error', {
+        error_type: 'invalid_ad_type',
+        standard: selectedStandard,
+        detected_ad_type: adTypeInfo?.ad_type
+      });
+      return
+    }
 
     setAnalysisState("loading")
+    trackEvent('compliance_analysis_started', {
+      standard: selectedStandard,
+      file_type: file.type,
+      file_size: file.size
+    });
 
     try {
       const formData = new FormData()
@@ -177,6 +232,12 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       const result = await response.json()
       setResults(result)
       setAnalysisState("complete")
+      trackEvent('compliance_analysis_complete', {
+        standard: selectedStandard,
+        success: true,
+        has_violations: result.violations?.length > 0,
+        violation_count: result.violations?.length || 0
+      });
     } catch (error) {
       console.error("Analysis error:", error)
       setError("Failed to analyze the image. Please try again.")
@@ -186,6 +247,10 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
         variant: "destructive",
       })
       setAnalysisState("idle")
+      trackEvent('compliance_analysis_error', {
+        error_type: 'analysis_failed',
+        standard: selectedStandard
+      });
     }
   }
 
@@ -194,6 +259,9 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
     setResults(null)
     setAdTypeError(null)
     setError(null)
+    trackEvent('compliance_analysis_reset', {
+      standard: selectedStandard
+    });
   }
 
   const isAnalyzing = (state: AnalysisState): state is "validating" | "loading" => {

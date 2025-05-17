@@ -82,7 +82,7 @@ export function Footer({ showCreativesToggle = false, creativesVisible = true, o
               </li>
               <li>
                 <a
-                  href="https://www.linkedin.com/company"
+                  href="https://www.linkedin.com/company/hawky-ai/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center text-gray-9 hover:text-gray-12 transition-colors"

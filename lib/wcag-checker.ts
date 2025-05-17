@@ -57,63 +57,50 @@ Include ALL compliance checks in your response, not just violations. For each gu
    - Do UI components (buttons, form controls, focus indicators) have at least a 3:1 contrast ratio with adjacent colors?
    - Do graphical objects that convey information have sufficient contrast?
 
-6. **2.1.1 Keyboard Accessibility (A)** 
-   - If the ad has interactive elements, can they be operated using only a keyboard?
-   - Are there keyboard traps or elements that can't be accessed via keyboard?
 
-7. **2.4.4 Link Purpose (In Context) (A)** 
+6. **2.4.4 Link Purpose (In Context) (A)** 
    - Are all links and buttons clearly labeled with text that indicates their purpose or destination?
    - Are there any generic links like "click here" or "learn more" without context?
 
-8. **2.2.2 Pause, Stop, Hide (A)** 
-   - If the ad contains moving, blinking, scrolling, or auto-updating content, can users pause, stop, or hide it?
-   - Does any animation last longer than 5 seconds without controls?
 
-9. **2.3.1 Three Flashes or Below Threshold (A)** 
+7. **2.3.1 Three Flashes or Below Threshold (A)** 
    - Does the ad avoid content that flashes more than three times per second?
    - Could any flashing content trigger seizures?
 
-10. **3.1.1 Language of Page (A)** 
+8. **3.1.1 Language of Page (A)** 
     - Is the primary language of the ad content properly declared or identifiable?
     - Would assistive technologies correctly identify the language?
 
-11. **3.3.2 Labels or Instructions (A)** 
+9. **3.3.2 Labels or Instructions (A)** 
     - Are form elements in the ad (if any) clearly labeled with descriptive instructions?
     - Would users understand what information is expected in each field?
 
-12. **3.1.2 Language of Parts (AA)** 
+10. **3.1.2 Language of Parts (AA)** 
     - If multiple languages are used, are those parts correctly identified?
     - Would screen readers pronounce foreign words correctly?
 
-13. **4.1.2 Name, Role, Value (A)** 
+11. **4.1.2 Name, Role, Value (A)** 
     - Do all UI components have appropriate names, roles, and values for assistive technologies?
-    - Would screen readers correctly identify interactive elements?
+    - Would screen readers correctly identify interactive elements
 
-14. **1.2.2 Captions (Prerecorded) (A)** 
-    - If the ad includes video with audio, are captions provided?
-    - Are the captions synchronized and equivalent to the audio content?
 
-15. **1.2.5 Audio Description (AA)** 
-    - If the ad includes video, are audio descriptions available for important visual content?
-    - Would blind users understand all essential visual information?
-
-16. **1.3.1 Info and Relationships (A)** 
+12. **1.3.1 Info and Relationships (A)** 
     - Is the content structure logical and conveyed through proper semantic markup?
     - Would the ad's structure make sense when read by a screen reader?
 
-17. **2.4.6 Headings and Labels (AA)** 
+13. **2.4.6 Headings and Labels (AA)** 
     - Are all headings and labels clear, descriptive, and informative?
     - Do they accurately describe the content or function they relate to?
 
-18. **1.4.4 Resize Text (AA)** 
+14. **1.4.4 Resize Text (AA)** 
     - Can text be resized up to 200% without loss of content or functionality?
     - Would the ad remain usable if text size is increased?
 
-19. **1.4.10 Reflow (AA)** 
+15. **1.4.10 Reflow (AA)** 
     - Would content reflow properly on small screens without requiring horizontal scrolling?
     - Is the design responsive to different viewport sizes?
 
-20. **1.4.12 Text Spacing (AA)** 
+16. **1.4.12 Text Spacing (AA)** 
     - Would the ad remain readable and functional if text spacing is adjusted?
     - Is there any content that would be cut off or overlap if text spacing is increased?
 

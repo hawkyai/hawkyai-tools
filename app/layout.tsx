@@ -2,6 +2,8 @@ import type React from "react"
 import "@/app/globals.css"
 import { Source_Sans_3, Raleway } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import Script from "next/script"
+import type { Metadata } from "next"
 
 // Load Source Sans Pro (now called Source Sans 3)
 const sourceSans = Source_Sans_3({
@@ -17,21 +19,86 @@ const raleway = Raleway({
   variable: "--font-raleway",
 })
 
-export const metadata = {
-  title: "Hawky.ai - Transform Creative Guesswork into Predictable Outcomes",
-  description:
-    "Hawky.ai combines deep creative analysis with AI-powered development tools to deliver a complete intelligence-driven creative ecosystem for B2C marketers.",
-    generator: 'v0.dev'
+export const metadata: Metadata = {
+  title: "Hawky.ai - AI-Powered Ad Compliance & Analysis Platform",
+  description: "Automate your ad compliance checks and analysis with Hawky.ai's AI-powered platform. Ensure your ads meet ASCI, WCAG, IRDAI, and financial guidelines.",
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Google Tag Manager */}
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-5WB2NFZC');
+          `}
+        </Script>
+        {/* End Google Tag Manager */}
+
+        {/* B2B Tracking Script */}
+        <Script id="b2b-tracking" strategy="afterInteractive">
+          {`
+            !function () {
+              var reb2b = window.reb2b = window.reb2b || [];
+              if (reb2b.invoked) return;
+              reb2b.invoked = true;
+              reb2b.methods = ["identify", "collect"];
+              reb2b.factory = function (method) {
+                return function () {
+                  var args = Array.prototype.slice.call(arguments);
+                  args.unshift(method);
+                  reb2b.push(args);
+                  return reb2b;
+                };
+              };
+              for (var i = 0; i < reb2b.methods.length; i++) {
+                var key = reb2b.methods[i];
+                reb2b[key] = reb2b.factory(key);
+              }
+              reb2b.load = function (key) {
+                var script = document.createElement("script");
+                script.type = "text/javascript";
+                script.async = true;
+                script.src = "https://s3-us-west-2.amazonaws.com/b2bjsstore/b/" + key + "/4O7Z0HM53ENX.js.gz";
+                var first = document.getElementsByTagName("script")[0];
+                first.parentNode.insertBefore(script, first);
+              };
+              reb2b.SNIPPET_VERSION = "1.0.1";
+              reb2b.load("4O7Z0HM53ENX");
+            }();
+          `}
+        </Script>
+        <Script id="factors-ai-tracker" strategy="beforeInteractive">
+          {`
+            window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("k8i7d4utf01wqp27047fb74uqbl45w11",{host:"https://api.factors.ai"}),this}();
+          `}
+        </Script>
+        <Script 
+          src="https://app.factors.ai/assets/factors.js"
+          strategy="afterInteractive"
+          async
+        />
+      </head>
       <body className={`${sourceSans.className} ${sourceSans.variable} ${raleway.variable}`}>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-5WB2NFZC"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
+        {/* End Google Tag Manager (noscript) */}
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           {children}
         </ThemeProvider>
