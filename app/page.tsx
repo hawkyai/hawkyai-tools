@@ -13,6 +13,7 @@ import { GradientBadge } from "@/components/gradient-badge"
 import { Activity } from "lucide-react"
 import { Header } from "@/components/ui/header"
 import { GetStartedSection } from "@/components/get-started-section"
+import Image from "next/image"
 
 export default function Home() {
   // Set showCreatives to false by default to hide floating elements
@@ -76,84 +77,24 @@ export default function Home() {
               </div>
 
               {/* Enhanced KPI section */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 w-full max-w-3xl mx-auto">
-                <div className="p-6 rounded-lg bg-black/70 backdrop-blur-sm border border-gray-3/30 shadow-lg shadow-purple-500/5 transform transition-all hover:scale-105">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="p-2 rounded-full bg-purple-500/10">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-white h-5 w-5"
-                      >
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                      </svg>
-                    </div>
-                    <div className="text-xs text-white font-medium">CAMPAIGN COSTS</div>
-                  </div>
-                  <p className="text-4xl font-bold text-white mb-1">-45%</p>
-                  <div className="w-full h-1 bg-gray-3/30 rounded-full overflow-hidden">
-                    <div className="h-full w-[45%] bg-gradient-to-r from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] rounded-full"></div>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-20 pt-10 w-full max-w-5xl mx-auto px-4 md:px-8">
+                {/* Lower Campaign Costs */}
+                <div className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
+                  <p className="text-4xl font-extrabold text-white mb-1">45%</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Lower Campaign Costs</h3>
+                  <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">Predict creative performance before spending ad budget</p>
                 </div>
-                <div className="p-6 rounded-lg bg-black/70 backdrop-blur-sm border border-gray-3/30 shadow-lg shadow-purple-500/5 transform transition-all hover:scale-105">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="p-2 rounded-full bg-purple-500/10">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-white h-5 w-5"
-                      >
-                        <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7Z" />
-                        <path d="m5 16 3 4" />
-                        <path d="m19 16-3 4" />
-                      </svg>
-                    </div>
-                    <div className="text-xs text-white font-medium">ROAS IMPROVEMENT</div>
-                  </div>
-                  <p className="text-4xl font-bold text-white mb-1">3.2x</p>
-                  <div className="w-full h-1 bg-gray-3/30 rounded-full overflow-hidden">
-                    <div className="h-full w-[80%] bg-gradient-to-r from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] rounded-full"></div>
-                  </div>
+                {/* Higher ROAS */}
+                <div className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
+                  <p className="text-4xl font-extrabold text-white mb-1">3.2x</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Higher ROAS</h3>
+                  <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">Data-backed creative decisions driving better results</p>
                 </div>
-                <div className="p-6 rounded-lg bg-black/70 backdrop-blur-sm border border-gray-3/30 shadow-lg shadow-purple-500/5 transform transition-all hover:scale-105">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="p-2 rounded-full bg-purple-500/10">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-white h-5 w-5"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                    </div>
-                    <div className="text-xs text-white font-medium">TIME SAVED</div>
-                  </div>
-                  <p className="text-4xl font-bold text-white mb-1">82%</p>
-                  <div className="w-full h-1 bg-gray-3/30 rounded-full overflow-hidden">
-                    <div className="h-full w-[82%] bg-gradient-to-r from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] rounded-full"></div>
-                  </div>
+                {/* Time Saved */}
+                <div className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
+                  <p className="text-4xl font-extrabold text-white mb-1">82%</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Time Saved</h3>
+                  <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">Automated creative storyboarding, development, testing and optimization</p>
                 </div>
               </div>
             </div>
