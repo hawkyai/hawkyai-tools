@@ -33,76 +33,39 @@ Include ALL compliance checks in your response, not just violations. For each gu
 
 ### Evaluate the ad against the following WCAG 2.1 criteria:
 
-1. **1.1.1 Non-text Content (A)** 
-   - Does every non-text element in the ad (like images, icons, graphics) have appropriate alt text or text alternatives?
-   - Are decorative elements properly marked or implemented to be ignored by assistive technology?
-   - Since this is an image analysis, assume alt text would need to be added separately. Focus on whether the visual content would require descriptive alt text.
 
-2. **1.4.3 Contrast (Minimum) (AA)** 
+1. **1.4.3 Contrast (Minimum) (AA)** 
    - Does all text maintain a minimum contrast ratio of 4.5:1 against its background?
    - For large text (18pt or 14pt bold), is the contrast ratio at least 3:1?
    - Check text over images, gradients, or complex backgrounds particularly carefully.
 
-3. **1.4.5 Images of Text (AA)** 
+2. **1.4.5 Images of Text (AA)** 
    - Is text presented as actual text rather than within images?
    - Are there any instances where text is embedded in images unnecessarily?
-   - Exceptions are allowed for logos or when the presentation is essential.
+   - Exceptions are allowed for logos or primary design elements when the presentation is essential.
 
-4. **1.4.1 Use of Color (A)** 
+3. **1.4.1 Use of Color (A)** 
    - Is color not the only visual means of conveying information?
    - Are there additional indicators (text, patterns, icons) to convey information beyond color?
    - Would the ad be understandable in grayscale?
 
-5. **1.4.11 Non-text Contrast (AA)** 
-   - Do UI components (buttons, form controls, focus indicators) have at least a 3:1 contrast ratio with adjacent colors?
+4. **1.4.11 Non-text Contrast (AA)** 
+   - Do other components apart from text have at least a 3:1 contrast ratio with adjacent colors?
    - Do graphical objects that convey information have sufficient contrast?
 
 
-6. **2.4.4 Link Purpose (In Context) (A)** 
-   - Are all links and buttons clearly labeled with text that indicates their purpose or destination?
-   - Are there any generic links like "click here" or "learn more" without context?
-
-
-7. **2.3.1 Three Flashes or Below Threshold (A)** 
-   - Does the ad avoid content that flashes more than three times per second?
-   - Could any flashing content trigger seizures?
-
-8. **3.1.1 Language of Page (A)** 
+5. **3.1.1 Language of Page (A)** 
     - Is the primary language of the ad content properly declared or identifiable?
     - Would assistive technologies correctly identify the language?
 
-9. **3.3.2 Labels or Instructions (A)** 
-    - Are form elements in the ad (if any) clearly labeled with descriptive instructions?
-    - Would users understand what information is expected in each field?
-
-10. **3.1.2 Language of Parts (AA)** 
+6. **3.1.2 Language of Parts (AA)** 
     - If multiple languages are used, are those parts correctly identified?
     - Would screen readers pronounce foreign words correctly?
 
-11. **4.1.2 Name, Role, Value (A)** 
-    - Do all UI components have appropriate names, roles, and values for assistive technologies?
-    - Would screen readers correctly identify interactive elements
-
-
-12. **1.3.1 Info and Relationships (A)** 
+7. **1.3.1 Info and Relationships (A)** 
     - Is the content structure logical and conveyed through proper semantic markup?
     - Would the ad's structure make sense when read by a screen reader?
 
-13. **2.4.6 Headings and Labels (AA)** 
-    - Are all headings and labels clear, descriptive, and informative?
-    - Do they accurately describe the content or function they relate to?
-
-14. **1.4.4 Resize Text (AA)** 
-    - Can text be resized up to 200% without loss of content or functionality?
-    - Would the ad remain usable if text size is increased?
-
-15. **1.4.10 Reflow (AA)** 
-    - Would content reflow properly on small screens without requiring horizontal scrolling?
-    - Is the design responsive to different viewport sizes?
-
-16. **1.4.12 Text Spacing (AA)** 
-    - Would the ad remain readable and functional if text spacing is adjusted?
-    - Is there any content that would be cut off or overlap if text spacing is increased?
 
 For each criterion:
 1. Examine the ad thoroughly
