@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowLeft,
-  Share,
   Download,
   AlertTriangle,
   CheckCircle,
@@ -17,6 +16,7 @@ import {
 import { toast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AdTypeResult } from "@/lib/ad-type-detector"
+import { ScientificButton } from "@/components/scientific-button"
 
 interface ComplianceResultsProps {
   results: any
@@ -87,15 +87,6 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
     }
   }
 
-  const handleShare = () => {
-    // In a real implementation, this would generate a shareable link
-    navigator.clipboard.writeText(window.location.href)
-    toast({
-      title: "Link copied to clipboard",
-      description: "You can now share this compliance report with others",
-    })
-  }
-
   const handleDownload = useCallback(async () => {
     setIsGeneratingPdf(true)
     toast({
@@ -119,57 +110,93 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
       doc.setFontSize(16)
       doc.text(standardName, 105, 25, { align: "center" })
 
-      // Add compliance summary
-      doc.setFontSize(14)
-      doc.text("Compliance Summary", 14, 40)
+      // Add the uploaded image
+      if (imageUrl) {
+        try {
+          // Convert base64 or URL to image data
+          const imgData = await new Promise((resolve, reject) => {
+            const img = new Image()
+            img.crossOrigin = "Anonymous"
+            img.onload = () => {
+              const canvas = document.createElement("canvas")
+              canvas.width = img.width
+              canvas.height = img.height
+              const ctx = canvas.getContext("2d")
+              ctx?.drawImage(img, 0, 0)
+              resolve(canvas.toDataURL("image/jpeg", 0.8))
+            }
+            img.onerror = reject
+            img.src = imageUrl
+          })
 
-      doc.setFontSize(12)
-      const summaryText = results.compliance_summary || "No summary available"
-      const splitSummary = doc.splitTextToSize(summaryText, 180)
-      doc.text(splitSummary, 14, 50)
+          // Calculate image dimensions to fit page width while maintaining aspect ratio
+          const pageWidth = doc.internal.pageSize.getWidth()
+          const margin = 20
+          const maxWidth = pageWidth - (margin * 2)
+          const imgWidth = Math.min(maxWidth, 400) // Limit maximum width
+          const imgHeight = (imgWidth * 0.75) // Assuming 4:3 aspect ratio
 
-      // Add overall rating
-      if (results.overall_rating) {
-        doc.text(`Overall Rating: ${results.overall_rating}`, 14, 70)
+          // Add image to PDF
+          doc.addImage(imgData as string, "JPEG", margin, 35, imgWidth, imgHeight)
+          
+          // Adjust the starting position for the next content
+          const contentStartY = 35 + imgHeight + 10
+          
+          // Add compliance summary
+          doc.setFontSize(14)
+          doc.text("Compliance Summary", 14, contentStartY)
+
+          doc.setFontSize(12)
+          const summaryText = results.compliance_summary || "No summary available"
+          const splitSummary = doc.splitTextToSize(summaryText, 180)
+          doc.text(splitSummary, 14, contentStartY + 10)
+
+          // Add overall rating
+          if (results.overall_rating) {
+            doc.text(`Overall Rating: ${results.overall_rating}`, 14, contentStartY + 20)
+          }
+
+          // Add statistics
+          doc.text(`Passed: ${statusCounts.pass || 0}`, 14, contentStartY + 30)
+          doc.text(`Failed: ${statusCounts.fail || 0}`, 50, contentStartY + 30)
+
+          // Add WCAG compliance level if applicable
+          if (standard === "wcag") {
+            doc.text(`WCAG Compliance Level: ${wcagComplianceLevel}`, 14, contentStartY + 40)
+          }
+
+          // Add violations table
+          doc.setFontSize(14)
+          doc.text("Compliance Details", 14, contentStartY + 50)
+
+          // Prepare table data
+          const tableData = violations.map((v: any) => [
+            v.rule || "N/A",
+            v.status.toUpperCase(),
+            v.description || "No description",
+            v.suggestedFix || "N/A",
+          ])
+
+          // Add table
+          autoTable(doc, {
+            startY: contentStartY + 55,
+            head: [["Rule", "Status", "Description", "Suggested Fix"]],
+            body: tableData,
+            headStyles: { fillColor: [51, 51, 51] },
+            alternateRowStyles: { fillColor: [240, 240, 240] },
+            styles: { overflow: "linebreak", cellWidth: "auto" },
+            columnStyles: {
+              0: { cellWidth: 40 },
+              1: { cellWidth: 20 },
+              2: { cellWidth: 70 },
+              3: { cellWidth: 60 },
+            },
+          })
+        } catch (error) {
+          console.error("Error adding image to PDF:", error)
+          // Continue with PDF generation without the image
+        }
       }
-
-      // Add statistics
-      doc.text(`Passed: ${statusCounts.pass || 0}`, 14, 80)
-      doc.text(`Warnings: ${statusCounts.warning || 0}`, 50, 80)
-      doc.text(`Failed: ${statusCounts.fail || 0}`, 90, 80)
-
-      // Add WCAG compliance level if applicable
-      if (standard === "wcag") {
-        doc.text(`WCAG Compliance Level: ${wcagComplianceLevel}`, 14, 90)
-      }
-
-      // Add violations table
-      doc.setFontSize(14)
-      doc.text("Compliance Details", 14, 105)
-
-      // Prepare table data
-      const tableData = violations.map((v: any) => [
-        v.rule || "N/A",
-        v.status.toUpperCase(),
-        v.description || "No description",
-        v.suggestedFix || "N/A",
-      ])
-
-      // Add table
-      autoTable(doc, {
-        startY: 110,
-        head: [["Rule", "Status", "Description", "Suggested Fix"]],
-        body: tableData,
-        headStyles: { fillColor: [51, 51, 51] },
-        alternateRowStyles: { fillColor: [240, 240, 240] },
-        styles: { overflow: "linebreak", cellWidth: "auto" },
-        columnStyles: {
-          0: { cellWidth: 40 },
-          1: { cellWidth: 20 },
-          2: { cellWidth: 70 },
-          3: { cellWidth: 60 },
-        },
-      })
 
       // Add footer
       const pageCount = doc.getNumberOfPages()
@@ -201,7 +228,7 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
     } finally {
       setIsGeneratingPdf(false)
     }
-  }, [results, standard, standardName, statusCounts, violations, wcagComplianceLevel])
+  }, [results, standard, standardName, statusCounts, violations, wcagComplianceLevel, imageUrl])
 
   return (
     <div className="w-full py-8 px-0 overflow-x-hidden">
@@ -214,16 +241,9 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
           <Button
             variant="outline"
             className="flex items-center gap-2 outline-button rounded-full"
-            onClick={handleShare}
-          >
-            <Share className="h-4 w-4 text-white" /> Share
-          </Button>
-          <Button
-            className="gradient-button flex items-center gap-2 rounded-full"
             onClick={handleDownload}
-            disabled={isGeneratingPdf}
           >
-            <Download className="h-4 w-4" /> {isGeneratingPdf ? "Preparing..." : "Download Report"}
+            <Download className="h-4 w-4 text-white" /> {isGeneratingPdf ? "Preparing..." : "Download Report"}
           </Button>
         </div>
       </div>
@@ -323,12 +343,10 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
                     className={`hawky-badge ${
                       results.overall_rating === "Compliant"
                         ? "hawky-badge-pass text-green-400 border-green-400"
-                        : results.overall_rating === "Partially Compliant"
-                          ? "hawky-badge-warning text-yellow-400 border-yellow-400"
-                          : "hawky-badge-fail text-red-400 border-red-400"
+                        : "hawky-badge-fail text-red-400 border-red-400"
                     }`}
                   >
-                    {results.overall_rating}
+                    {results.overall_rating === "Partially Compliant" ? "Non-compliant" : results.overall_rating}
                   </span>
                 </div>
               )}
@@ -456,11 +474,19 @@ function renderViolations(
 
             {isExpanded && (
               <div className="p-4 bg-black/30">
-                <p className="text-gray-300 mb-4 break-words">{violation.description}</p>
+                <p className="text-gray-300 mb-4 break-words">
+                  {violation.description}
+                  {isFail && violation.rule?.toLowerCase().includes("text") && " Text embedded in images makes content inaccessible to screen readers and violates accessibility guidelines. Consider using actual text elements instead."}
+                  {isFail && violation.rule?.toLowerCase().includes("color") && " Insufficient color contrast makes content difficult to read for users with visual impairments. Ensure text has a contrast ratio of at least 4.5:1 against its background."}
+                  {isFail && violation.rule?.toLowerCase().includes("alt") && " Missing alt text prevents screen reader users from understanding image content. Add descriptive alt text to all images."}
+                  {isFail && !violation.rule?.toLowerCase().includes("text") && !violation.rule?.toLowerCase().includes("color") && !violation.rule?.toLowerCase().includes("alt") && " This issue needs to be addressed to ensure compliance with accessibility standards."}
+                  {isWarning && " While not critical, addressing this would improve overall accessibility and user experience."}
+                  {isPass && " This element meets all accessibility requirements."}
+                </p>
 
                 {violation.rule && (
                   <div className="mb-4">
-                    <p className="text-sm text-gray-400 break-words">Rule: {violation.rule}</p>
+                    <p className="text-sm text-gray-400 break-words">{violation.rule}</p>
                   </div>
                 )}
 
