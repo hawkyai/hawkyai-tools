@@ -4,10 +4,10 @@ import { ScientificButton } from "@/components/scientific-button"
 
 export default function ComplianceOptions() {
   return (
-    <div className="w-full max-w-full px-28 mx-auto py-0 mb-16">
+    <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-0 mb-16">
       {/* <h2 className="text-3xl text-white font-extrabold mb-12 text-center">Choose a Compliance Standard</h2> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         <ComplianceCard
           title="ASCI Checker"
           description="Advertising Standards Council of India"
@@ -59,7 +59,7 @@ interface ComplianceCardProps {
 
 function ComplianceCard({ title, description, imgSrc, imgAlt, href, details }: ComplianceCardProps) {
   return (
-    <div className="bg-[#18181b] rounded-xl shadow-lg flex flex-col p-6 min-h-[280px] border border-[#232329]">
+    <div className="bg-[#18181b] rounded-xl shadow-lg flex flex-col p-4 sm:p-6 min-h-[240px] sm:min-h-[280px] border border-[#232329] w-full max-w-full">
       <div className="flex items-center mb-3">
         <div className="bg-white/90 p-0 rounded-full mr-3 flex items-center justify-center w-12 h-12 overflow-hidden border border-gray-200">
           <img src={imgSrc} alt={imgAlt} className="w-8 h-8 object-contain rounded" />

@@ -32,7 +32,7 @@ export const SocialProof = () => {
           <div className="logos-slider">
             <div className="logos-slide">
               {logos.map((logo, index) => (
-                <div key={`logo-1-${index}`} className="mx-12 group relative h-32 w-48">
+                <div key={`logo-1-${index}`} className="mx-10 group relative h-32 w-48">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Image
                       src={logo.src || "/placeholder.svg"}
@@ -48,7 +48,7 @@ export const SocialProof = () => {
             </div>
             <div className="logos-slide">
               {logos.map((logo, index) => (
-                <div key={`logo-2-${index}`} className="mx-12 group relative h-32 w-48">
+                <div key={`logo-2-${index}`} className="mx-10 group relative h-32 w-48">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Image
                       src={logo.src || "/placeholder.svg"}

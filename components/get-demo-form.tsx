@@ -202,7 +202,7 @@ export function GetDemoForm() {
                 Privacy Policy
               </a>{" "}
               and{" "}
-              <a href="#" className="text-[#ee2a7b] hover:underline">
+              <a href="https://www.hawky.ai/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-[#ee2a7b] hover:underline">
                 Terms of Service
               </a>
               .

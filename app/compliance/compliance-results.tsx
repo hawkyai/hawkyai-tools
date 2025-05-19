@@ -141,57 +141,57 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
           
           // Adjust the starting position for the next content
           const contentStartY = 35 + imgHeight + 10
-          
-          // Add compliance summary
-          doc.setFontSize(14)
+
+      // Add compliance summary
+      doc.setFontSize(14)
           doc.text("Compliance Summary", 14, contentStartY)
 
-          doc.setFontSize(12)
-          const summaryText = results.compliance_summary || "No summary available"
-          const splitSummary = doc.splitTextToSize(summaryText, 180)
+      doc.setFontSize(12)
+      const summaryText = results.compliance_summary || "No summary available"
+      const splitSummary = doc.splitTextToSize(summaryText, 180)
           doc.text(splitSummary, 14, contentStartY + 10)
 
-          // Add overall rating
-          if (results.overall_rating) {
+      // Add overall rating
+      if (results.overall_rating) {
             doc.text(`Overall Rating: ${results.overall_rating}`, 14, contentStartY + 20)
-          }
+      }
 
-          // Add statistics
+      // Add statistics
           doc.text(`Passed: ${statusCounts.pass || 0}`, 14, contentStartY + 30)
           doc.text(`Failed: ${statusCounts.fail || 0}`, 50, contentStartY + 30)
 
-          // Add WCAG compliance level if applicable
-          if (standard === "wcag") {
+      // Add WCAG compliance level if applicable
+      if (standard === "wcag") {
             doc.text(`WCAG Compliance Level: ${wcagComplianceLevel}`, 14, contentStartY + 40)
-          }
+      }
 
-          // Add violations table
-          doc.setFontSize(14)
+      // Add violations table
+      doc.setFontSize(14)
           doc.text("Compliance Details", 14, contentStartY + 50)
 
-          // Prepare table data
-          const tableData = violations.map((v: any) => [
-            v.rule || "N/A",
-            v.status.toUpperCase(),
-            v.description || "No description",
-            v.suggestedFix || "N/A",
-          ])
+      // Prepare table data
+      const tableData = violations.map((v: any) => [
+        v.rule || "N/A",
+        v.status.toUpperCase(),
+        v.description || "No description",
+        v.suggestedFix || "N/A",
+      ])
 
-          // Add table
-          autoTable(doc, {
+      // Add table
+      autoTable(doc, {
             startY: contentStartY + 55,
-            head: [["Rule", "Status", "Description", "Suggested Fix"]],
-            body: tableData,
-            headStyles: { fillColor: [51, 51, 51] },
-            alternateRowStyles: { fillColor: [240, 240, 240] },
-            styles: { overflow: "linebreak", cellWidth: "auto" },
-            columnStyles: {
-              0: { cellWidth: 40 },
-              1: { cellWidth: 20 },
-              2: { cellWidth: 70 },
-              3: { cellWidth: 60 },
-            },
-          })
+        head: [["Rule", "Status", "Description", "Suggested Fix"]],
+        body: tableData,
+        headStyles: { fillColor: [51, 51, 51] },
+        alternateRowStyles: { fillColor: [240, 240, 240] },
+        styles: { overflow: "linebreak", cellWidth: "auto" },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 20 },
+          2: { cellWidth: 70 },
+          3: { cellWidth: 60 },
+        },
+      })
         } catch (error) {
           console.error("Error adding image to PDF:", error)
           // Continue with PDF generation without the image
@@ -343,7 +343,7 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
                     className={`hawky-badge ${
                       results.overall_rating === "Compliant"
                         ? "hawky-badge-pass text-green-400 border-green-400"
-                        : "hawky-badge-fail text-red-400 border-red-400"
+                          : "hawky-badge-fail text-red-400 border-red-400"
                     }`}
                   >
                     {results.overall_rating === "Partially Compliant" ? "Non-compliant" : results.overall_rating}

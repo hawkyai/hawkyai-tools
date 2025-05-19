@@ -26,26 +26,6 @@ export function Footer({ showCreativesToggle = false, creativesVisible = true, o
               AI-powered creative intelligence for predictable marketing outcomes.
             </p>
 
-            {/* Subtle toggle button for creatives - only shown on homepage */}
-            {showCreativesToggle && onToggleCreatives && (
-              <button
-                onClick={() => onToggleCreatives(!creativesVisible)}
-                className="mt-4 flex items-center text-xs text-gray-9 hover:text-gray-12 transition-colors"
-              >
-                {creativesVisible ? (
-                  <>
-                    <EyeOff className="h-3 w-3 mr-1" />
-                    Hide floating elements
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-3 w-3 mr-1" />
-                    Show floating elements
-                  </>
-                )}
-              </button>
-            )}
-
             <div className="mt-6">
               <Link href="#how-it-works" className="text-sm text-gray-9 hover:text-gray-12 transition-colors">
                 How Hawky works
@@ -108,41 +88,6 @@ export function Footer({ showCreativesToggle = false, creativesVisible = true, o
                 </a>
               </li>
             </ul>
-
-            {/* Tools section for mobile - only visible on mobile */}
-            <div className="md:hidden mt-6">
-              <h3 className="text-sm font-medium text-gray-12">Tools</h3>
-              <div className="mt-4">
-                <button
-                  onClick={() => setIsToolsOpen(!isToolsOpen)}
-                  className="flex items-center gap-1 text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors"
-                >
-                  <span>View Tools</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isToolsOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                {isToolsOpen && (
-                  <ul className="mt-2 space-y-2 text-sm pl-2">
-                    <li>
-                      <Link href="/adanalyzer" className="text-gray-9 hover:text-gray-12 transition-colors">
-                        Ad Analyzer
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/compliance" className="text-gray-9 hover:text-gray-12 transition-colors">
-                        Ad Compliance Checker
-                      </Link>
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <span className="text-gray-9">Competitive Intel</span>
-                      <span className="text-xs px-2 py-0.5 bg-purple-900/50 text-purple-300 rounded-full">
-                        Coming Soon
-                      </span>
-                    </li>
-                  </ul>
-                )}
-              </div>
-            </div>
           </div>
         </div>
         <div className="mt-12 border-t border-gray-3/20 pt-8 text-center text-sm text-gray-9">
