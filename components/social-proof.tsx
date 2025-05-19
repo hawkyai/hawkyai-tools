@@ -5,13 +5,12 @@ import { StarRating } from "./star-rating"
 
 export const SocialProof = () => {
   const logos = [
-    { src: "/logos/la-marquise.png", alt: "La Marquise Fine Jewellery" },
-    { src: "/logos/guvi.png", alt: "GUVI" },
-    { src: "/logos/bajaj-allianz.webp", alt: "Bajaj Allianz" },
-    { src: "/logos/hiveminds.svg", alt: "Hiveminds" },
-    { src: "/logos/bajaj-finserv.png", alt: "Bajaj Finserv" },
-    { src: "/logos/smallcase.png", alt: "Smallcase" },
-    { src: "/logos/rummyverse.png", alt: "RummyVerse Cash" },
+    { src: "/logos/new_logos/LaMarquise.webp", alt: "La Marquise Fine Jewellery" },
+    { src: "/logos/new_logos/Bajaj_Finserv.png", alt: "Bajaj Finserv" },
+    { src: "/logos/new_logos/Rummyverse.png", alt: "RummyVerse Cash" },
+    { src: "/logos/new_logos/guvi-logo.png", alt: "GUVI" },
+    { src: "/logos/new_logos/Hiveminds.png", alt: "Hiveminds" },
+    { src: "/logos/new_logos/Smallcase_idjuKylPFo_0.png", alt: "Smallcase" },
   ]
 
   return (
@@ -33,15 +32,15 @@ export const SocialProof = () => {
           <div className="logos-slider">
             <div className="logos-slide">
               {logos.map((logo, index) => (
-                <div key={`logo-1-${index}`} className="mx-8 group relative h-36 w-64">
+                <div key={`logo-1-${index}`} className="mx-12 group relative h-32 w-48">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Image
                       src={logo.src || "/placeholder.svg"}
                       alt={logo.alt}
-                      fill
-                      sizes="256px"
+                      width={140}
+                      height={60}
                       className="object-contain filter grayscale opacity-80 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 p-2"
-                      style={{ objectFit: "contain" }}
+                      style={{ objectFit: "contain", maxHeight: '60px', maxWidth: '140px' }}
                     />
                   </div>
                 </div>
@@ -49,15 +48,15 @@ export const SocialProof = () => {
             </div>
             <div className="logos-slide">
               {logos.map((logo, index) => (
-                <div key={`logo-2-${index}`} className="mx-8 group relative h-36 w-64">
+                <div key={`logo-2-${index}`} className="mx-12 group relative h-32 w-48">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Image
                       src={logo.src || "/placeholder.svg"}
                       alt={logo.alt}
-                      fill
-                      sizes="256px"
+                      width={140}
+                      height={60}
                       className="object-contain filter grayscale opacity-80 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 p-2"
-                      style={{ objectFit: "contain" }}
+                      style={{ objectFit: "contain", maxHeight: '60px', maxWidth: '140px' }}
                     />
                   </div>
                 </div>
