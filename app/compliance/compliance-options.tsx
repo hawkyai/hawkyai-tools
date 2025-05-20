@@ -1,80 +1,145 @@
 import type React from "react"
 import Link from "next/link"
 import { ScientificButton } from "@/components/scientific-button"
+import { Shield, Accessibility, FileText, DollarSign, Upload, Sparkles } from "lucide-react"
+
+const complianceOptions = [
+  {
+    title: "ASCI",
+    description: "Advertising Standards Council of India",
+    details: "Check ads against ASCI ethical advertising guidelines.",
+    href: "/compliance/asci",
+    imgSrc: "/Asci-logo.png",
+    imgAlt: "ASCI Logo",
+    iconBg: "bg-pink-900/20",
+    buttonColor: "bg-pink-500 hover:bg-pink-600 focus:ring-pink-500 text-black",
+    buttonText: "Check ASCI Compliance",
+  },
+  {
+    title: "WCAG",
+    description: "Web Content Accessibility Guidelines",
+    details: "Ensure ads meet accessibility standards for all users.",
+    href: "/compliance/wcag",
+    imgSrc: "/Wcag.png",
+    imgAlt: "WCAG Logo",
+    iconBg: "bg-purple-900/20",
+    buttonColor: "bg-purple-500 hover:bg-purple-600 focus:ring-purple-500 text-black",
+    buttonText: "Check WCAG Compliance",
+  },
+  {
+    title: "IRDAI",
+    description: "Insurance Regulatory and Development Authority of India",
+    details: "Verify insurance ads comply with IRDAI regulations.",
+    href: "/compliance/irdai",
+    imgSrc: "/IRDAI.jpg",
+    imgAlt: "IRDAI Logo",
+    iconBg: "bg-yellow-900/20",
+    buttonColor: "bg-yellow-400 hover:bg-yellow-500 focus:ring-yellow-400 text-black",
+    buttonText: "Check IRDAI Compliance",
+  },
+  {
+    title: "Finance",
+    description: "Financial Advertisement Guidelines",
+    details: "Check financial ads for regulatory compliance.",
+    href: "/compliance/finance",
+    imgSrc: "/sebi-logo.png",
+    imgAlt: "SEBI Logo",
+    iconBg: "bg-green-900/20",
+    buttonColor: "bg-green-500 hover:bg-green-600 focus:ring-green-500 text-black",
+    buttonText: "Check Finance Compliance",
+  },
+]
+
+function HowHawkyWorks() {
+  return (
+    <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto mb-10 pt-10 pb-10">
+      <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center mb-2">How Compliance Checker Works</h2>
+      <p className="text-base text-gray-400 text-center mb-8 max-w-2xl mx-auto">Get your ad compliance results in three simple steps</p>
+      <div className="flex flex-col gap-6 md:flex-row md:gap-6 w-full justify-center items-stretch">
+        {/* Step 1 */}
+        <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
+          <span className="absolute left-1/2 -top-5 -translate-x-1/2 md:static md:translate-x-0 md:mb-2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-600 bg-black text-pink-400 font-bold text-base">1</span>
+          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
+            <Upload className="w-6 h-6 text-pink-400" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">Upload Your Ad</h3>
+          <p className="text-gray-400 text-sm">Upload your advertisement image in any common format (JPG, PNG, etc.)</p>
+        </div>
+        {/* Step 2 */}
+        <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
+          <span className="absolute left-1/2 -top-5 -translate-x-1/2 md:static md:translate-x-0 md:mb-2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-600 bg-black text-purple-400 font-bold text-base">2</span>
+          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
+            <Sparkles className="w-6 h-6 text-purple-400" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">AI Analysis</h3>
+          <p className="text-gray-400 text-sm">HawkyAI analyzes your ad against the selected compliance standard</p>
+        </div>
+        {/* Step 3 */}
+        <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
+          <span className="absolute left-1/2 -top-5 -translate-x-1/2 md:static md:translate-x-0 md:mb-2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-600 bg-black text-yellow-400 font-bold text-base">3</span>
+          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
+            <FileText className="w-6 h-6 text-yellow-400" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-1">Get Results</h3>
+          <p className="text-gray-400 text-sm">Review detailed compliance report with actionable suggestions</p>
+        </div>
+      </div>
+    
+    </div>
+  )
+}
 
 export default function ComplianceOptions() {
   return (
-    <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-0 mb-16">
-      {/* <h2 className="text-3xl text-white font-extrabold mb-12 text-center">Choose a Compliance Standard</h2> */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        <ComplianceCard
-          title="ASCI Checker"
-          description="Advertising Standards Council of India"
-          imgSrc="/Asci-logo.png"
-          imgAlt="ASCI Logo"
-          href="/compliance/asci"
-          details="Check ads against ASCI ethical advertising guidelines."
-        />
-
-        <ComplianceCard
-          title="WCAG Checker"
-          description="Web Content Accessibility Guidelines"
-          imgSrc="/Wcag.png"
-          imgAlt="WCAG Logo"
-          href="/compliance/wcag"
-          details="Ensure ads meet accessibility standards for all users."
-        />
-
-        <ComplianceCard
-          title="IRDAI Checker"
-          description="Insurance Regulatory and Development Authority of India"
-          imgSrc="/Irdai-logo.webp"
-          imgAlt="IRDAI Logo"
-          href="/compliance/irdai"
-          details="Verify insurance ads comply with IRDAI regulations."
-        />
-
-        <ComplianceCard
-          title="SEBI Checker"
-          description="Financial Advertisement Guidelines"
-          imgSrc="/sebi-logo.png"
-          imgAlt="SEBI Logo"
-          href="/compliance/finance"
-          details="Check financial ads for regulatory compliance."
-        />
+    <>
+      <HowHawkyWorks />
+      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-0 mb-16 mt-32">
+        <div className="text-center mb-10">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">Choose Your Compliance Standard</h1>
+          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Select the regulatory framework that applies to your advertisement for targeted compliance analysis.</h2>
+        </div>
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+          {complianceOptions.map((option) => (
+            <ComplianceCard key={option.title} {...option} />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
 interface ComplianceCardProps {
   title: string
   description: string
+  details: string
+  href: string
   imgSrc: string
   imgAlt: string
-  href: string
-  details: string
+  iconBg: string
+  buttonColor: string
+  buttonText: string
 }
 
-function ComplianceCard({ title, description, imgSrc, imgAlt, href, details }: ComplianceCardProps) {
+function ComplianceCard({ title, description, details, href, imgSrc, imgAlt, iconBg, buttonColor, buttonText }: ComplianceCardProps) {
   return (
-    <div className="bg-[#18181b] rounded-xl shadow-lg flex flex-col p-4 sm:p-6 min-h-[240px] sm:min-h-[280px] border border-[#232329] w-full max-w-full">
-      <div className="flex items-center mb-3">
-        <div className="bg-white/90 p-0 rounded-full mr-3 flex items-center justify-center w-12 h-12 overflow-hidden border border-gray-200">
-          <img src={imgSrc} alt={imgAlt} className="w-8 h-8 object-contain rounded" />
+    <div className="bg-[#111112] rounded-2xl shadow-lg flex flex-col p-6 min-h-[260px] border border-[#232329] w-full max-w-full transition hover:shadow-xl hover:border-gray-600/40">
+      <div className="flex items-center mb-4">
+        <div className={`rounded-full w-12 h-12 flex items-center justify-center mr-4 bg-white/90 border border-gray-200`}>
+          <img src={imgSrc} alt={imgAlt} className="w-8 h-8 object-contain rounded-full" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white">{title}</h3>
-          <p className="text-gray-400 text-xs font-medium">{description}</p>
+          <h3 className="text-xl font-extrabold text-white leading-tight">{title}</h3>
+          <p className="text-gray-400 text-sm font-medium leading-tight">{description}</p>
         </div>
       </div>
-
-      <p className="text-gray-300 mb-6 flex-grow text-sm font-normal">{details}</p>
-
-      <ScientificButton href={href}>
-        Check Compliance
-      </ScientificButton>
+      <p className="text-white text-base font-normal mb-6 flex-grow leading-snug">{details}</p>
+      <Link href={href} className="mt-auto">
+        <button
+          className={`w-full rounded-lg px-4 py-2.5 font-semibold text-base flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${buttonColor}`}
+        >
+          {buttonText} <span className="ml-2">→</span>
+        </button>
+      </Link>
     </div>
   )
 }
