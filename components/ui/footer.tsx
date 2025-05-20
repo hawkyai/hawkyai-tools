@@ -79,7 +79,7 @@ export function Footer({ showCreativesToggle = false, creativesVisible = true, o
             <ul className="mt-4 space-y-2 text-sm">
               <li>
                 <a
-                  href="https://www.hawky.ai/terms-and-conditions"
+                  href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-9 hover:text-gray-12 transition-colors"

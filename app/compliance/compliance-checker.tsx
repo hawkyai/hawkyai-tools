@@ -16,6 +16,13 @@ import { detectAdType, type AdTypeResult } from "@/lib/ad-type-detector"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useRouter } from "next/navigation"
 
+// Add TypeScript declaration for window.dataLayer
+declare global {
+  interface Window {
+    dataLayer?: any[];
+  }
+}
+
 // Analytics tracking function
 const trackEvent = (eventName: string, eventData: Record<string, any> = {}) => {
   if (typeof window !== 'undefined' && window.dataLayer) {
@@ -32,9 +39,10 @@ type AnalysisState = "idle" | "validating" | "loading" | "complete"
 interface ComplianceCheckerProps {
   defaultStandard?: ComplianceStandard
   fixedStandard?: boolean
+  hideTitleDescription?: boolean
 }
 
-export default function ComplianceChecker({ defaultStandard = "asci", fixedStandard = false }: ComplianceCheckerProps) {
+export default function ComplianceChecker({ defaultStandard = "asci", fixedStandard = false, hideTitleDescription = false }: ComplianceCheckerProps) {
   const router = useRouter()
   const [selectedStandard, setSelectedStandard] = useState<ComplianceStandard>(defaultStandard)
   const [file, setFile] = useState<File | null>(null)
@@ -45,14 +53,12 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
   const [adTypeInfo, setAdTypeInfo] = useState<AdTypeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Update URL when standard changes (if different from default)
+  // Remove routing from useEffect
   useEffect(() => {
-    if (selectedStandard !== defaultStandard) {
-      router.push(`/${selectedStandard}`)
-      trackEvent('compliance_standard_changed', {
-        standard: selectedStandard
-      });
-    }
+    // No routing here anymore
+    trackEvent('compliance_standard_changed', {
+      standard: selectedStandard
+    });
   }, [selectedStandard, defaultStandard, router])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,6 +214,9 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       return
     }
 
+    // Do NOT route to another page; just perform analysis inline
+    // router.push(`/compliance/${selectedStandard}`)
+
     setAnalysisState("loading")
     trackEvent('compliance_analysis_started', {
       standard: selectedStandard,
@@ -287,13 +296,14 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
 
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-white">
-            <span className="gradient-text ">{getStandardFullName(selectedStandard)}</span> Compliance Checker
-          </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto">{getStandardDescription(selectedStandard)}</p>
-        </div>
-
+        {!hideTitleDescription && (
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold mb-4 text-white">
+              <span className="gradient-text ">{getStandardFullName(selectedStandard)}</span> Compliance Checker
+            </h1>
+            <p className="text-gray-400 max-w-2xl mx-auto">{getStandardDescription(selectedStandard)}</p>
+          </div>
+        )}
         <div className="w-full max-w-4xl hawky-card p-8">
           {error && (
             <Alert variant="destructive" className="mb-6 bg-red-900/20 border-red-500/30">

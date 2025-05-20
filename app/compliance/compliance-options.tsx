@@ -1,7 +1,8 @@
 import type React from "react"
 import Link from "next/link"
 import { ScientificButton } from "@/components/scientific-button"
-import { Shield, Accessibility, FileText, DollarSign, Upload, Sparkles } from "lucide-react"
+import { Shield, Accessibility, FileText, DollarSign, Upload, Sparkles, ArrowRight, ArrowDown } from "lucide-react"
+import ComplianceChecker from "./compliance-checker"
 
 const complianceOptions = [
   {
@@ -55,36 +56,46 @@ function HowHawkyWorks() {
     <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto mb-10 pt-10 pb-10">
       <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center mb-2">How Compliance Checker Works</h2>
       <p className="text-base text-gray-400 text-center mb-8 max-w-2xl mx-auto">Get your ad compliance results in three simple steps</p>
-      <div className="flex flex-col gap-6 md:flex-row md:gap-6 w-full justify-center items-stretch">
+      <div className="flex flex-col gap-0 md:flex-row md:gap-0 w-full justify-center items-stretch">
         {/* Step 1 */}
-        <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
-          <span className="absolute left-1/2 -top-5 -translate-x-1/2 md:static md:translate-x-0 md:mb-2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-600 bg-black text-pink-400 font-bold text-base">1</span>
-          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
-            <Upload className="w-6 h-6 text-pink-400" />
+        <div className="flex flex-col items-center w-full md:w-auto">
+          <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
+            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
+              <Upload className="w-6 h-6 text-pink-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-1">Upload Your Ad</h3>
+            <p className="text-gray-400 text-sm">Upload your advertisement image in any common format (JPG, PNG, etc.)</p>
           </div>
-          <h3 className="text-lg font-bold text-white mb-1">Upload Your Ad</h3>
-          <p className="text-gray-400 text-sm">Upload your advertisement image in any common format (JPG, PNG, etc.)</p>
+          {/* Arrow for mobile */}
+          <ArrowDown className="flex md:hidden w-8 h-8 text-gray-500 my-2" />
         </div>
+        {/* Arrow for desktop */}
+        <ArrowRight className="hidden md:flex w-8 h-8 text-gray-500 self-center mx-4" />
         {/* Step 2 */}
-        <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
-          <span className="absolute left-1/2 -top-5 -translate-x-1/2 md:static md:translate-x-0 md:mb-2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-600 bg-black text-purple-400 font-bold text-base">2</span>
-          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
-            <Sparkles className="w-6 h-6 text-purple-400" />
+        <div className="flex flex-col items-center w-full md:w-auto">
+          <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
+            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
+              <Sparkles className="w-6 h-6 text-purple-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-1">AI Analysis</h3>
+            <p className="text-gray-400 text-sm">HawkyAI analyzes your ad against the selected compliance standard</p>
           </div>
-          <h3 className="text-lg font-bold text-white mb-1">AI Analysis</h3>
-          <p className="text-gray-400 text-sm">HawkyAI analyzes your ad against the selected compliance standard</p>
+          {/* Arrow for mobile */}
+          <ArrowDown className="flex md:hidden w-8 h-8 text-gray-500 my-2" />
         </div>
+        {/* Arrow for desktop */}
+        <ArrowRight className="hidden md:flex w-8 h-8 text-gray-500 self-center mx-4" />
         {/* Step 3 */}
-        <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
-          <span className="absolute left-1/2 -top-5 -translate-x-1/2 md:static md:translate-x-0 md:mb-2 flex items-center justify-center w-7 h-7 rounded-full border border-gray-600 bg-black text-yellow-400 font-bold text-base">3</span>
-          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
-            <FileText className="w-6 h-6 text-yellow-400" />
+        <div className="flex flex-col items-center w-full md:w-auto">
+          <div className="relative flex-1 bg-[#111112] rounded-2xl border border-[#232329] p-4 flex flex-col items-center text-center min-w-0 max-w-[350px] mx-auto shadow-md">
+            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-4 mt-4 md:mt-0">
+              <FileText className="w-6 h-6 text-yellow-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-1">Get Results</h3>
+            <p className="text-gray-400 text-sm">Review detailed compliance report with actionable suggestions</p>
           </div>
-          <h3 className="text-lg font-bold text-white mb-1">Get Results</h3>
-          <p className="text-gray-400 text-sm">Review detailed compliance report with actionable suggestions</p>
         </div>
       </div>
-    
     </div>
   )
 }
@@ -92,6 +103,11 @@ function HowHawkyWorks() {
 export default function ComplianceOptions() {
   return (
     <>
+      <div className="container mx-auto px-4 py-12 flex-1">
+        <div className="max-w-4xl mx-auto">
+          <ComplianceChecker defaultStandard="asci" fixedStandard={false} hideTitleDescription />
+        </div>
+      </div>
       <HowHawkyWorks />
       <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-0 mb-16 mt-32">
         <div className="text-center mb-10">
@@ -135,7 +151,7 @@ function ComplianceCard({ title, description, details, href, imgSrc, imgAlt, ico
       <p className="text-white text-base font-normal mb-6 flex-grow leading-snug">{details}</p>
       <Link href={href} className="mt-auto">
         <button
-          className={`w-full rounded-lg px-4 py-2.5 font-semibold text-base flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${buttonColor}`}
+          className={`w-full rounded-lg px-4 py-2.5 font-semibold text-base flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-black`}
         >
           {buttonText} <span className="ml-2">→</span>
         </button>

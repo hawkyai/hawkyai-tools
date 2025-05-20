@@ -198,7 +198,7 @@ export function GetDemoForm() {
 
             <p className="text-xs text-gray-8 text-center mt-4">
               By submitting this form, you agree to our{" "}
-              <a href="#" className="text-[#ee2a7b] hover:underline">
+              <a href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0" className="text-[#ee2a7b] hover:underline">
                 Privacy Policy
               </a>{" "}
               and{" "}
