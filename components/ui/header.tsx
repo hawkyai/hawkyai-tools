@@ -4,12 +4,16 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { ChevronDown, Menu } from "lucide-react"
 import { ScientificButton } from "@/components/scientific-button"
+import { Link as ScrollLink } from 'react-scroll'
+import { useRouter, usePathname } from "next/navigation"
 
 export function Header() {
   const [isToolsOpen, setIsToolsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false)
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Handle mouse enter on dropdown
   const handleMouseEnter = () => {
@@ -36,6 +40,17 @@ export function Header() {
     }
   }, [])
 
+  const handleHowHawkyWorksClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (pathname !== "/") {
+      router.push("/#how-it-works");
+    } else {
+      // If already on home, use react-scroll or native scroll
+      const el = document.getElementById("how-it-works");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-[calc(100%-2rem)] border border-gray-3/20 bg-black/80 backdrop-blur-sm rounded-xl mx-auto max-w-[1300px] my-4">
       <div className="container flex h-20 items-center justify-between">
@@ -45,9 +60,28 @@ export function Header() {
           </Link>
         </div>
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="#how-it-works" className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors">
-            How Hawky works
-          </Link>
+          {pathname === "/" ? (
+            <ScrollLink
+              to="how-it-works"
+              smooth={true}
+              duration={600}
+              offset={-80}
+              className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors cursor-pointer"
+            >
+              How Hawky works
+            </ScrollLink>
+          ) : (
+            <a
+              href="/#how-it-works"
+              onClick={e => {
+                e.preventDefault();
+                router.push("/#how-it-works");
+              }}
+              className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors cursor-pointer"
+            >
+              How Hawky works
+            </a>
+          )}
           <Link
             href="/creative-ecosystem"
             className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors"
