@@ -29,8 +29,8 @@ export const SocialProof = () => {
           <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-10"></div>
 
           {/* Marquee container */}
-          <div className="logos-slider">
-            <div className="logos-slide">
+          <div className="logos-slider flex gap-8">
+            <div className="logos-slide flex gap-8">
               {logos.map((logo, index) => (
                 <div key={`logo-1-${index}`} className="mx-10 group relative h-32 w-48">
                   <div className="absolute inset-0 flex items-center justify-center">
