@@ -11,15 +11,6 @@ export default function LoadingState({ standard, state }: LoadingStateProps) {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold mb-4 text-white">
-          <span className="gradient-text">Ad Compliance</span> Checker
-        </h1>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-          Automate compliance analysis of your ad creatives across different regulations
-        </p>
-      </div>
-
       <div className="w-full max-w-4xl hawky-card p-16 flex flex-col items-center justify-center">
         <div className="relative w-24 h-24 mb-8">
           <div className="absolute inset-0 rounded-full bg-purple-900/20 animate-ping"></div>

@@ -103,7 +103,7 @@ function HowHawkyWorks() {
 export default function ComplianceOptions() {
   return (
     <>
-      <div className="container mx-auto px-4 py-12 flex-1">
+      <div className="container mx-auto px-4 py-1 flex-1">
         <div className="max-w-4xl mx-auto">
           <ComplianceChecker defaultStandard="asci" fixedStandard={false} hideTitleDescription />
         </div>

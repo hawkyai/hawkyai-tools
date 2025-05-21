@@ -126,8 +126,13 @@ export function Header() {
         <div className="hidden md:flex items-center gap-4">
           <ScientificButton href="/get-demo">Get Demo</ScientificButton>
         </div>
-        {/* Mobile hamburger for Tools */}
-        <div className="md:hidden flex items-center">
+        {/* Mobile Get Demo button and hamburger for Tools */}
+        <div className="md:hidden flex items-center gap-2 h-12">
+          <div className="flex items-center h-9">
+            <ScientificButton href="/get-demo">
+              <span className="text-sm">Get Demo</span>
+            </ScientificButton>
+          </div>
           <button
             className="p-2 rounded-md text-gray-9 hover:text-white focus:outline-none"
             aria-label="Open tools menu"
@@ -135,30 +140,31 @@ export function Header() {
           >
             <Menu className="h-7 w-7" />
           </button>
-          {isMobileToolsOpen && (
-            <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 md:hidden" onClick={() => setIsMobileToolsOpen(false)}>
-              <div className="mt-24 w-11/12 max-w-xs rounded-xl shadow-2xl bg-black border border-gray-3/30 backdrop-blur-lg overflow-hidden" onClick={e => e.stopPropagation()}>
-                <div className="flex flex-col py-2">
-                  <Link
-                    href="/compliance"
-                    className="block px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors font-medium"
-                    onClick={() => setIsMobileToolsOpen(false)}
-                  >
-                    Ad Compliance Checker
-                  </Link>
-                  <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
-                    <span>Ad Analyzer</span>
-                    <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
-                  </div>
-                  <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
-                    <span>Competitive Intel</span>
-                    <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
-                  </div>
+        </div>
+        {/* Mobile menu overlay */}
+        {isMobileToolsOpen && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 md:hidden" onClick={() => setIsMobileToolsOpen(false)}>
+            <div className="mt-24 w-11/12 max-w-xs rounded-xl shadow-2xl bg-black border border-gray-3/30 backdrop-blur-lg overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="flex flex-col py-2">
+                <Link
+                  href="/compliance"
+                  className="block px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors font-medium"
+                  onClick={() => setIsMobileToolsOpen(false)}
+                >
+                  Ad Compliance Checker
+                </Link>
+                <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
+                  <span>Ad Analyzer</span>
+                  <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
+                </div>
+                <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
+                  <span>Competitive Intel</span>
+                  <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </header>
   )

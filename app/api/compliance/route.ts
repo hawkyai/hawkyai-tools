@@ -4,11 +4,9 @@ import { checkWcagCompliance } from "@/lib/wcag-checker"
 import { checkIrdaiCompliance } from "@/lib/irdai-checker"
 import { checkFinanceCompliance } from "@/lib/finance-checker"
 import { detectAdType } from "@/lib/ad-type-detector"
+import { v4 as uuidv4 } from 'uuid'
 
-// This is a server-side API route that could be used for more complex processing
-// or to keep API keys secure in a production environment
 
-// Helper to convert a Blob/File to a Buffer in Node.js
 async function fileToBuffer(file: Blob): Promise<Buffer> {
   const arrayBuffer = await file.arrayBuffer();
   return Buffer.from(arrayBuffer);
@@ -33,6 +31,8 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await fileToBuffer(image)
+    const submissionId = uuidv4()
+    const timestamp = new Date().toISOString()
 
     // Validate ad type for selected standard
     const adType = await detectAdType(imageBuffer)
@@ -79,7 +79,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to analyze image" }, { status: 500 })
     }
 
-    return NextResponse.json({ ...result, adType })
+    return NextResponse.json({ 
+      ...result, 
+      adType,
+      submissionId,
+      timestamp,
+      standard
+    })
   } catch (error) {
     console.error("Error in analyze API:", error)
     return NextResponse.json({ error: "Failed to analyze image" }, { status: 500 })
