@@ -124,17 +124,19 @@ export function GetDemoForm() {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <PhoneInput
-                id="phone"
-                {...register("phone")}
-                className={errors.phone ? "border-red-500" : ""}
-                onChange={(e) => {
-                  // This ensures the phone input value is properly set in the form
-                  if (e.target) {
-                    setValue("phone", e.target.value)
-                  }
-                }}
-              />
+              <div className="w-full">
+                <PhoneInput
+                  id="phone"
+                  {...register("phone")}
+                  className={`w-full ${errors.phone ? "border-red-500" : ""}`}
+                  onChange={(e) => {
+                    // This ensures the phone input value is properly set in the form
+                    if (e.target) {
+                      setValue("phone", e.target.value)
+                    }
+                  }}
+                />
+              </div>
               {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
             </div>
 
