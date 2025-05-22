@@ -5,10 +5,10 @@ import { StarRating } from "./star-rating"
 
 export const SocialProof = () => {
   const logos = [
-    { src: "/logos/new_logos/LaMarquise.webp", alt: "La Marquise Fine Jewellery" },
+    { src: "/logos/la-marquise.png", alt: "La Marquise Fine Jewellery" },
     { src: "/logos/new_logos/Bajaj_Finserv.png", alt: "Bajaj Finserv" },
-    { src: "/logos/new_logos/Rummyverse.png", alt: "RummyVerse Cash" },
-    { src: "/logos/new_logos/guvi-logo.png", alt: "GUVI" },
+    { src: "/logos/rummyverse.png", alt: "RummyVerse Cash" },
+    { src: "/logos/guvi.png", alt: "GUVI" },
     { src: "/logos/new_logos/Hiveminds.png", alt: "Hiveminds" },
     { src: "/logos/new_logos/Smallcase_idjuKylPFo_0.png", alt: "Smallcase" },
   ]
@@ -39,7 +39,7 @@ export const SocialProof = () => {
                       alt={logo.alt}
                       width={140}
                       height={60}
-                      className="object-contain filter grayscale opacity-80 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 p-2"
+                      className="object-contain filter opacity-90 transition-all duration-300 group-hover:opacity-100 p-2"
                       style={{ objectFit: "contain", maxHeight: '60px', maxWidth: '140px' }}
                     />
                   </div>
@@ -55,7 +55,7 @@ export const SocialProof = () => {
                       alt={logo.alt}
                       width={140}
                       height={60}
-                      className="object-contain filter grayscale opacity-80 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 p-2"
+                      className="object-contain filter opacity-90 transition-all duration-300 group-hover:opacity-100 p-2"
                       style={{ objectFit: "contain", maxHeight: '60px', maxWidth: '140px' }}
                     />
                   </div>
