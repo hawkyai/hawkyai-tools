@@ -22,6 +22,25 @@ const raleway = Raleway({
 export const metadata: Metadata = {
   title: "Hawky.ai - AI-Powered Ad Compliance & Analysis Platform",
   description: "Automate your ad compliance checks and analysis with Hawky.ai's AI-powered platform. Ensure your ads meet ASCI, WCAG, IRDAI, and financial guidelines.",
+  icons: {
+    icon: [
+      { url: '/logos/Favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/logos/Favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    shortcut: '/logos/Favicon/favicon.ico',
+    apple: '/logos/Favicon/apple-touch-icon.png',
+    other: [
+      {
+        rel: 'android-chrome-192x192',
+        url: '/logos/Favicon/android-chrome-192x192.png',
+      },
+      {
+        rel: 'android-chrome-512x512',
+        url: '/logos/Favicon/android-chrome-512x512.png',
+      },
+    ],
+  },
+  manifest: '/logos/Favicon/site.webmanifest',
 }
 
 export default function RootLayout({

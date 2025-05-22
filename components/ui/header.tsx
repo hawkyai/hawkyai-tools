@@ -102,19 +102,15 @@ export function Header() {
 
             {isToolsOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-black/90 border border-gray-3/30 backdrop-blur-sm overflow-hidden z-50">
-                <Link
-                    href="/compliance"
-                    className="block px-4 py-2 text-sm text-gray-9 hover:bg-gray-800 hover:text-white transition-colors"
-                  >
-                    Ad Compliance Checker 
+                <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
+                  <Link href="/compliance" className="flex-1">
+                    Ad Compliance Checker
                   </Link>
+                  <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
+                </div>
                 <div className="py-1">
                   <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
                     <span>Ad Analyzer</span>
-                    <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
-                    <span>Competitive Intel</span>
                     <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
                   </div>
                 </div>
@@ -146,19 +142,14 @@ export function Header() {
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 md:hidden" onClick={() => setIsMobileToolsOpen(false)}>
             <div className="mt-24 w-11/12 max-w-xs rounded-xl shadow-2xl bg-black border border-gray-3/30 backdrop-blur-lg overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="flex flex-col py-2">
-                <Link
-                  href="/compliance"
-                  className="block px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors font-medium"
-                  onClick={() => setIsMobileToolsOpen(false)}
-                >
-                  Ad Compliance Checker
-                </Link>
                 <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
-                  <span>Ad Analyzer</span>
+                  <Link href="/compliance" className="flex-1 font-medium" onClick={() => setIsMobileToolsOpen(false)}>
+                    Ad Compliance Checker
+                  </Link>
                   <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
                 </div>
                 <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
-                  <span>Competitive Intel</span>
+                  <span>Ad Analyzer</span>
                   <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
                 </div>
               </div>

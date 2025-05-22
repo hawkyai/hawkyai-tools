@@ -5,94 +5,68 @@ import { StarRating } from "./star-rating"
 
 export const SocialProof = () => {
   const logos = [
-    { src: "/logos/la-marquise.png", alt: "La Marquise Fine Jewellery" },
-    { src: "/logos/new_logos/Bajaj_Finserv.png", alt: "Bajaj Finserv" },
+    { src: "/logos/marquise.png", alt: "La Marquise Fine Jewellery" },
+    { src: "/logos/bajaserv.png", alt: "Bajaj Finserv" },
     { src: "/logos/rummyverse.png", alt: "RummyVerse Cash" },
     { src: "/logos/guvi.png", alt: "GUVI" },
-    { src: "/logos/new_logos/Hiveminds.png", alt: "Hiveminds" },
-    { src: "/logos/new_logos/Smallcase_idjuKylPFo_0.png", alt: "Smallcase" },
+    { src: "/logos/hiveminds1.png", alt: "Hiveminds" },
+    { src: "/logos/smallcase1.png", alt: "Smallcase" },
   ]
 
   return (
-    <section className="py-12 relative overflow-hidden bg-transparent">
-      <div className="container px-4 md:px-6 mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-white mb-8">You're in good company</h2>
+    <section className="py-10 md:py-16 relative overflow-hidden bg-transparent">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-6 sm:mb-8">
+          You're in good company
+        </h2>
 
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-8 sm:mb-10">
           <StarRating rating={5} count={128} size="lg" showAverage={false} showCount={false} />
         </div>
 
-        {/* Logo marquee with larger logos */}
+        {/* Marquee container */}
         <div className="relative w-full overflow-hidden">
-          {/* Gradient overlays for fade effect */}
-          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-black to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-10"></div>
+          {/* Gradient overlays */}
+          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none"></div>
 
-          {/* Marquee container */}
-          <div className="logos-slider flex gap-8">
-            <div className="logos-slide flex gap-8">
-              {logos.map((logo, index) => (
-                <div key={`logo-1-${index}`} className="mx-10 group relative h-32 w-48">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={logo.src || "/placeholder.svg"}
-                      alt={logo.alt}
-                      width={140}
-                      height={60}
-                      className="object-contain filter opacity-90 transition-all duration-300 group-hover:opacity-100 p-2"
-                      style={{ objectFit: "contain", maxHeight: '60px', maxWidth: '140px' }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="logos-slide">
-              {logos.map((logo, index) => (
-                <div key={`logo-2-${index}`} className="mx-10 group relative h-32 w-48">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={logo.src || "/placeholder.svg"}
-                      alt={logo.alt}
-                      width={140}
-                      height={60}
-                      className="object-contain filter opacity-90 transition-all duration-300 group-hover:opacity-100 p-2"
-                      style={{ objectFit: "contain", maxHeight: '60px', maxWidth: '140px' }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Marquee animation row */}
+          <div className="logos-track flex w-fit animate-slide">
+            {[...logos, ...logos].map((logo, index) => (
+              <div
+                key={`logo-${index}`}
+                className="relative h-20 w-28 sm:h-24 sm:w-36 md:h-28 md:w-44 lg:h-32 lg:w-48 flex items-center justify-center group mx-4 sm:mx-6"
+              >
+                <Image
+                  src={logo.src || "/placeholder.svg"}
+                  alt={logo.alt}
+                  width={140}
+                  height={60}
+                  className="object-contain transition-all duration-300 group-hover:opacity-100 opacity-90 p-2"
+                  style={{ maxHeight: "100%", maxWidth: "100%" }}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* CSS for the marquee animation */}
+      {/* Marquee animation */}
       <style jsx global>{`
         @keyframes slide {
-          from {
+          0% {
             transform: translateX(0);
           }
-          to {
-            transform: translateX(-100%);
+          100% {
+            transform: translateX(-50%);
           }
         }
-        
-        .logos-slider {
-          display: flex;
-          width: 100%;
-          overflow: hidden;
-          padding: 20px 0;
-          background: transparent;
-        }
-        
-        .logos-slide {
-          display: flex;
-          align-items: center;
+
+        .logos-track {
           animation: slide 30s linear infinite;
-          min-width: 100%;
         }
-        
-        .logos-slider:hover .logos-slide {
+
+        .logos-track:hover {
           animation-play-state: paused;
         }
       `}</style>
