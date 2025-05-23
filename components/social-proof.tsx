@@ -7,10 +7,11 @@ export const SocialProof = () => {
   const logos = [
     { src: "/logos/marquise.png", alt: "La Marquise Fine Jewellery" },
     { src: "/logos/bajaserv.png", alt: "Bajaj Finserv" },
-    { src: "/logos/rummyverse.png", alt: "RummyVerse Cash" },
     { src: "/logos/guvi.png", alt: "GUVI" },
     { src: "/logos/hiveminds1.png", alt: "Hiveminds" },
     { src: "/logos/smallcase1.png", alt: "Smallcase" },
+    { src: "/logos/rummyverse.png", alt: "RummyVerse Cash" },
+
   ]
 
   return (
