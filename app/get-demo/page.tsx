@@ -12,6 +12,11 @@ export default function GetDemoPage() {
       <div className="container mx-auto py-12 px-4 md:px-6">
         <h1 className="text-3xl md:text-4xl font-bold mb-8 text-left">Achieve better ROAS with Hawky.ai</h1>
 
+        {/* Mobile Form - Only visible on small screens */}
+        <div className="lg:hidden mb-12">
+          <GetDemoForm />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mt-12">
           {/* Left side - Testimonials and Logos */}
           <div className="space-y-10">
@@ -31,8 +36,8 @@ export default function GetDemoPage() {
             </div>
           </div>
 
-          {/* Right side - Lead Generation Form */}
-          <div className="lg:border-l lg:border-gray-3/20 lg:pl-16">
+          {/* Right side - Lead Generation Form - Only visible on large screens */}
+          <div className="hidden lg:block lg:border-l lg:border-gray-3/20 lg:pl-16">
             <GetDemoForm />
           </div>
         </div>

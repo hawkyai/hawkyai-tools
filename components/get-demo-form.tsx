@@ -14,8 +14,8 @@ import { PhoneInput } from "./phone-input"
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
-  referralSource: z.string().min(1, { message: "Please select an option" }),
+  phone: z.string().optional(),
+  referralSource: z.string().optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -123,7 +123,7 @@ export function GetDemoForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">Phone Number (Optional)</Label>
               <div className="w-full">
                 <PhoneInput
                   id="phone"
@@ -141,7 +141,7 @@ export function GetDemoForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="referralSource">Where did you hear about Hawky.ai?</Label>
+              <Label htmlFor="referralSource">Where did you hear about Hawky.ai? (Optional)</Label>
               <Select onValueChange={(value) => setValue("referralSource", value)}>
                 <SelectTrigger id="referralSource" className={errors.referralSource ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select an option" />
