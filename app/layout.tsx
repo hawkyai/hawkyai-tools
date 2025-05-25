@@ -20,8 +20,8 @@ const raleway = Raleway({
 })
 
 export const metadata: Metadata = {
-  title: "Hawky.ai - AI-Powered Ad Compliance & Analysis Platform",
-  description: "Automate your ad compliance checks and analysis with Hawky.ai's AI-powered platform. Ensure your ads meet ASCI, WCAG, IRDAI, and financial guidelines.",
+  title: "Hawky.ai - Creative Factory for Performance Marketers",
+  description: "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
   icons: {
     icon: [
       { url: '/logos/Favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
