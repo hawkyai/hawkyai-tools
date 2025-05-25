@@ -45,9 +45,18 @@ export function Header() {
     if (pathname !== "/") {
       router.push("/#how-it-works");
     } else {
-      // If already on home, use react-scroll or native scroll
+      // If already on home, use smooth scroll
       const el = document.getElementById("how-it-works");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      if (el) {
+        const headerOffset = 80; // Adjust this value based on your header height
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
     }
   };
 
@@ -61,25 +70,19 @@ export function Header() {
         </div>
         <nav className="hidden md:flex items-center gap-8">
           {pathname === "/" ? (
-            <ScrollLink
-              to="how-it-works"
-              smooth={true}
-              duration={600}
-              offset={-80}
+            <button
+              onClick={handleHowHawkyWorksClick}
               className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors cursor-pointer"
             >
               How Hawky works
-            </ScrollLink>
+            </button>
           ) : (
             <a
               href="/#how-it-works"
-              onClick={e => {
-                e.preventDefault();
-                router.push("/#how-it-works");
-              }}
+              onClick={handleHowHawkyWorksClick}
               className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors cursor-pointer"
             >
-            How Hawky works
+              How Hawky works
             </a>
           )}
           <Link

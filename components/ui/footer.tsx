@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, EyeOff, Mail, Linkedin, ChevronDown } from "lucide-react"
+import { Mail, Linkedin } from "lucide-react"
 import { useState } from "react"
 
 interface FooterProps {
@@ -11,23 +11,36 @@ interface FooterProps {
   onToggleCreatives?: (visible: boolean) => void
 }
 
-export function Footer({ showCreativesToggle = false, creativesVisible = true, onToggleCreatives }: FooterProps) {
+export function Footer({
+  showCreativesToggle = false,
+  creativesVisible = true,
+  onToggleCreatives,
+}: FooterProps) {
   const [isToolsOpen, setIsToolsOpen] = useState(false)
 
   return (
-    <footer className="border-t border-gray-3/20 bg-black">
-      <div className="container px-4 py-12 md:px-6">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
-          <div className="col-span-2 md:col-span-1">
+    <footer className="relative z-10 border-t border-gray-3/20 bg-black">
+      <div className="container mx-auto px-4 py-12 md:px-6">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div>
             <div className="flex items-center">
-              <Image src="/hawky-logo.png" alt="Hawky Logo" width={150} height={40} className="h-8 w-auto" />
+              <Image
+                src="/hawky-logo.png"
+                alt="Hawky Logo"
+                width={150}
+                height={40}
+                className="h-8 w-auto"
+              />
             </div>
             <p className="mt-4 text-sm text-gray-9">
               AI-powered creative intelligence for predictable marketing outcomes.
             </p>
 
             <div className="mt-6">
-              <Link href="#how-it-works" className="text-sm text-gray-9 hover:text-gray-12 transition-colors">
+              <Link
+                href="/#how-it-works"
+                className="text-sm text-gray-9 hover:text-gray-12 transition-colors"
+              >
                 How Hawky works
               </Link>
             </div>
@@ -37,7 +50,10 @@ export function Footer({ showCreativesToggle = false, creativesVisible = true, o
             <h3 className="text-sm font-medium text-gray-12">Company</h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li>
-                <Link href="#" className="text-gray-9 hover:text-gray-12 transition-colors">
+                <Link
+                  href="https://www.linkedin.com/company/hawky-ai/about/"
+                  className="text-gray-9 hover:text-gray-12 transition-colors"
+                >
                   About
                 </Link>
               </li>
@@ -90,6 +106,7 @@ export function Footer({ showCreativesToggle = false, creativesVisible = true, o
             </ul>
           </div>
         </div>
+
         <div className="mt-12 border-t border-gray-3/20 pt-8 text-center text-sm text-gray-9">
           <p>© {new Date().getFullYear()} Hawky.ai. All rights reserved.</p>
         </div>
