@@ -105,7 +105,7 @@ async function sendSlackNotification(formData: any, submissionId: string) {
       throw new Error(`Slack webhook failed: ${slackRes.status} - ${slackText}`)
     }
     return { success: true }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending Slack notification:", error)
     return { success: false, error: error.message }
   }
@@ -165,4 +165,24 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: `
+          error: `Google Sheets API error: ${response.status}`,
+          details: response.data,
+        },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    console.error("Error processing request:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    )
+  }
+}
+
+  
