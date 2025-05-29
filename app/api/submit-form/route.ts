@@ -6,28 +6,36 @@ import { google } from 'googleapis'
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL
 
 // Google Sheets configuration
-const SPREADSHEET_ID = '1iSnkei0DSOGhDEP_mJZDyenRoCF3p5qgFiiMgkaHkYw'
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1iSnkei0DSOGhDEP_mJZDyenRoCF3p5qgFiiMgkaHkYw'
 const SHEET_NAME = 'Sheet1' // Replace with your sheet name if different
 
 // Initialize Google Sheets client
 let sheets: any = null
 
 try {
+  if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+    console.error('Missing Google credentials:', {
+      hasClientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
+      hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY
+    })
+    throw new Error('Missing Google credentials')
+  }
+
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     },
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
 
   // Log authentication details (safely)
   console.log('Google Auth configured with email:', process.env.GOOGLE_CLIENT_EMAIL)
-  console.log('Private key length:', process.env.GOOGLE_PRIVATE_KEY?.length || 0)
+  console.log('Private key length:', process.env.GOOGLE_PRIVATE_KEY.length)
 
   sheets = google.sheets({ version: 'v4', auth })
-} catch (error) {
-  console.error('Error initializing Google Sheets client:', error)
+} catch (error: unknown) {
+  console.error('Error initializing Google Sheets client:', error instanceof Error ? error.message : 'Unknown error')
 }
 
 async function sendSlackNotification(formData: any, submissionId: string) {
@@ -157,28 +165,4 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: `Google Sheets API error: ${response.status}`,
-          details: response.data,
-        },
-        { status: 500 },
-      )
-    }
-
-    // Send Slack notification
-    const slackResult = await sendSlackNotification(formData, submissionId)
-    if (!slackResult.success) {
-      return NextResponse.json({ success: false, error: slackResult.error || "Slack notification failed" }, { status: 500 })
-    }
-
-    // Return success response
-    return NextResponse.json({ success: true, data: response.data })
-  } catch (error: any) {
-    console.error("Server error:", error)
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ 
-      success: false, 
-      error: errorMessage || "Server error processing your request",
-      details: error instanceof Error ? error.stack : undefined
-    }, { status: 500 })
-  }
-}
+          error: `
