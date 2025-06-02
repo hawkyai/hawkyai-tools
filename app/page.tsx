@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { FloatingCreatives } from "@/components/floating-creatives"
 import { ScientificButton } from "@/components/scientific-button"
 import { Spotlight } from "@/components/ui/spotlight-new"
@@ -13,39 +13,11 @@ import { GradientBadge } from "@/components/gradient-badge"
 import { Activity } from "lucide-react"
 import { Header } from "@/components/ui/header"
 import { GetStartedSection } from "@/components/get-started-section"
-import { getHomePageContent, getKpiContent, getChallengeContent, getBenefitsContent } from "@/lib/datocms"
+import Image from "next/image"
 
 export default function Home() {
+  // Set showCreatives to false by default to hide floating elements
   const [showCreatives, setShowCreatives] = useState(false)
-  const [homeContent, setHomeContent] = useState<any>(null)
-  const [kpiContent, setKpiContent] = useState<any[]>([])
-  const [challengeContent, setChallengeContent] = useState<any>(null)
-  const [benefitsContent, setBenefitsContent] = useState<any>(null)
-
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const [home, kpi, challenge, benefits] = await Promise.all([
-          getHomePageContent(),
-          getKpiContent(),
-          getChallengeContent(),
-          getBenefitsContent()
-        ])
-        setHomeContent(home)
-        setKpiContent(kpi)
-        setChallengeContent(challenge)
-        setBenefitsContent(benefits)
-      } catch (error) {
-        console.error('Error fetching content:', error)
-      }
-    }
-
-    fetchContent()
-  }, [])
-
-  if (!homeContent || !kpiContent.length || !challengeContent || !benefitsContent) {
-    return <div>Loading...</div>
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-black relative overflow-hidden w-full">
@@ -81,18 +53,20 @@ export default function Home() {
           <div className="container px-4 md:px-6 relative z-10">
             <div className="flex flex-col items-center space-y-10 max-w-4xl mx-auto">
               <div className="space-y-8 text-center">
+                {/* Removed the AI-Powered Marketing Intelligence badge */}
                 <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
                   <span className="font-raleway bg-clip-text text-transparent bg-gradient-to-r from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]">
-                    {homeContent.mainHeading}
+                    Creative factory
                   </span>{" "}
-                  <span className="text-gray-12">{homeContent.subHeading}</span>
+                  <span className="text-gray-12">for Performance Marketing</span>
                 </h1>
                 <p className="text-lg md:text-xl text-gray-9 max-w-3xl mx-auto">
-                  {homeContent.description}
+                  Automate research, analysis, production and analysis of creatives for your performance marketing
                 </p>
                 <div className="flex justify-center pt-6">
+                  {/* Scientific "How it works" button - smaller and with updated text */}
                   <ScientificButton href="#how-it-works" icon={<Activity className="h-4 w-4" />}>
-                    {homeContent.ctaButtonText}
+                    How It Works
                   </ScientificButton>
                 </div>
               </div>
@@ -102,32 +76,45 @@ export default function Home() {
                 <SocialProof />
               </div>
 
-              {/* KPI Section */}
+              {/* Enhanced KPI section */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-20 pt-10 w-full max-w-5xl mx-auto px-4 md:px-8">
-                {kpiContent.map((kpi, index) => (
-                  <div key={index} className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
-                    <p className="text-4xl font-extrabold text-white mb-1">{kpi.value}</p>
-                    <h3 className="text-lg font-semibold text-white mb-1">{kpi.title}</h3>
-                    <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">{kpi.description}</p>
-                  </div>
-                ))}
+                {/* Lower Campaign Costs */}
+                <div className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
+                  <p className="text-4xl font-extrabold text-white mb-1">45%</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Lower Campaign Costs</h3>
+                  <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">Predict creative performance before spending ad budget</p>
+                </div>
+                {/* Higher ROAS */}
+                <div className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
+                  <p className="text-4xl font-extrabold text-white mb-1">3.2x</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Higher ROAS</h3>
+                  <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">Data-backed creative decisions driving better results</p>
+                </div>
+                {/* Time Saved */}
+                <div className="p-5 rounded-xl bg-black/80 backdrop-blur-lg border border-gray-3/40 [box-shadow:0_4px_32px_0_rgba(249,206,52,0.10),0_2px_8px_0_rgba(238,42,123,0.12),0_1.5px_6px_0_rgba(98,40,215,0.15)] flex flex-col items-center text-center min-h-[170px] min-w-[180px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px]">
+                  <p className="text-4xl font-extrabold text-white mb-1">82%</p>
+                  <h3 className="text-lg font-semibold text-white mb-1">Time Saved</h3>
+                  <p className="text-sm text-gray-400 font-normal leading-snug max-w-xs">Automated creative storyboarding, development, testing and optimization</p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Challenge Section */}
+        {/* Rest of the page content remains unchanged */}
+        {/* Problem Section */}
         <section className="py-12 md:py-16 bg-gradient-to-b from-black/50 to-black/80 backdrop-blur-sm">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
               <div className="inline-block mb-4">
-                <GradientBadge>{challengeContent.badgeText}</GradientBadge>
+                <GradientBadge>The Challenge</GradientBadge>
               </div>
               <h2 className="text-3xl font-bold tracking-tighter text-white sm:text-4xl md:text-5xl">
-                {challengeContent.heading}
+                Are these sounding familiar?
               </h2>
               <p className="max-w-[800px] text-xl text-gray-9">
-                {challengeContent.description}
+                B2C marketers are stuck in a cycle of creative guesswork, platform black boxes, and unpredictable
+                outcomes.
               </p>
             </div>
 
@@ -147,13 +134,13 @@ export default function Home() {
           <div id="why-choose" className="container px-4 md:px-6 mt-20">
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
               <div className="inline-block mb-4">
-                <GradientBadge>{benefitsContent.badgeText}</GradientBadge>
+                <GradientBadge>The Benefits</GradientBadge>
               </div>
               <h2 className="text-3xl font-bold tracking-tighter text-white sm:text-4xl md:text-5xl">
-                {benefitsContent.heading}
+                Why choose Hawky.ai
               </h2>
               <p className="max-w-[800px] text-xl text-gray-9">
-                {benefitsContent.description}
+                Our platform delivers measurable results that transform your marketing performance
               </p>
             </div>
 
@@ -168,3 +155,4 @@ export default function Home() {
     </div>
   )
 }
+

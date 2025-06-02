@@ -82,7 +82,7 @@ export function Header() {
               onClick={handleHowHawkyWorksClick}
               className="text-sm font-medium text-gray-9 hover:text-gray-12 transition-colors cursor-pointer"
             >
-              How Hawky works
+            How Hawky works
             </a>
           )}
           <Link
