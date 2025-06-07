@@ -1,53 +1,50 @@
-import type React from "react"
-import "@/app/globals.css"
-import { Source_Sans_3, Raleway } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
-import Script from "next/script"
-import type { Metadata } from "next"
+import type React from "react";
+import "@/app/globals.css";
+import { Source_Sans_3, Raleway } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import Script from "next/script";
+import type { Metadata } from "next";
 
 // Load Source Sans Pro (now called Source Sans 3)
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-source-sans",
-})
+});
 
 // Load Raleway for the "Creative factory" text
 const raleway = Raleway({
   subsets: ["latin"],
   weight: ["600", "700"],
   variable: "--font-raleway",
-})
+});
 
 export const metadata: Metadata = {
   title: "Hawky.ai - Creative Factory for Performance Marketers",
-  description: "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
+  description:
+    "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
   icons: {
     icon: [
-      { url: '/logos/Favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/logos/Favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: "/logos/Favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/logos/Favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    shortcut: '/logos/Favicon/favicon.ico',
-    apple: '/logos/Favicon/apple-touch-icon.png',
+    shortcut: "/logos/Favicon/favicon.ico",
+    apple: "/logos/Favicon/apple-touch-icon.png",
     other: [
       {
-        rel: 'android-chrome-192x192',
-        url: '/logos/Favicon/android-chrome-192x192.png',
+        rel: "android-chrome-192x192",
+        url: "/logos/Favicon/android-chrome-192x192.png",
       },
       {
-        rel: 'android-chrome-512x512',
-        url: '/logos/Favicon/android-chrome-512x512.png',
+        rel: "android-chrome-512x512",
+        url: "/logos/Favicon/android-chrome-512x512.png",
       },
     ],
   },
-  manifest: '/logos/Favicon/site.webmanifest',
-}
+  manifest: "/logos/Favicon/site.webmanifest",
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -101,7 +98,7 @@ export default function RootLayout({
             window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("k8i7d4utf01wqp27047fb74uqbl45w11",{host:"https://api.factors.ai"}),this}();
           `}
         </Script>
-        <Script 
+        <Script
           src="https://app.factors.ai/assets/factors.js"
           strategy="afterInteractive"
           async
@@ -114,14 +111,31 @@ export default function RootLayout({
             src="https://www.googletagmanager.com/ns.html?id=GTM-5WB2NFZC"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
+
+        {/* Microsoft Clarity */}
+        <Script
+          id="microsoft-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "${process.env.NEXT_PUBLIC_MICROSOFT_CLARITY}");
+            `,
+          }}
+        />
+        {/* End Microsoft Clarity */}
+
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           {children}
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
