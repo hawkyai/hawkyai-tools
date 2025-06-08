@@ -117,7 +117,7 @@ export function Header() {
                 <Link href="/compliance-checker" className="block hover:bg-gray-800/50 transition-colors">
                   <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9">
                     <span className="flex-1">Ad Compliance Checker</span>
-                    <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
+                    <span className="text-xs px-2 py-1 bg-white-900/50 text-green-300 rounded-full">Try Now</span>
                   </div>
                 </Link>
                 <div className="py-1">
