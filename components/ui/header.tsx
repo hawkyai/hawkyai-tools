@@ -9,11 +9,16 @@ import { useRouter, usePathname } from "next/navigation"
 
 export function Header() {
   const [isToolsOpen, setIsToolsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false)
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Handle mouse enter on dropdown
   const handleMouseEnter = () => {
@@ -60,6 +65,10 @@ export function Header() {
     }
   };
 
+  if (!mounted) {
+    return null; // or a loading skeleton
+  }
+
   return (
     <header className="sticky top-0 z-50 w-[calc(100%-2rem)] border border-gray-3/20 bg-black/80 backdrop-blur-sm rounded-xl mx-auto max-w-[1300px] my-4">
       <div className="container flex h-20 items-center justify-between">
@@ -105,10 +114,12 @@ export function Header() {
 
             {isToolsOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-black/90 border border-gray-3/30 backdrop-blur-sm overflow-hidden z-50">
-                <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9">
-                  <span className="flex-1">Ad Compliance Checker</span>
-                  <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
-                </div>
+                <Link href="/compliance-checker" className="block hover:bg-gray-800/50 transition-colors">
+                  <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9">
+                    <span className="flex-1">Ad Compliance Checker</span>
+                    <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
+                  </div>
+                </Link>
                 <div className="py-1">
                   <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
                     <span>Ad Analyzer</span>
@@ -143,10 +154,12 @@ export function Header() {
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 md:hidden" onClick={() => setIsMobileToolsOpen(false)}>
             <div className="mt-24 w-11/12 max-w-xs rounded-xl shadow-2xl bg-black border border-gray-3/30 backdrop-blur-lg overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="flex flex-col py-2">
-                <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9">
-                  <span className="flex-1 font-medium">Ad Compliance Checker</span>
-                  <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
-                </div>
+                <Link href="/compliance-checker" className="block hover:bg-gray-800/50 transition-colors">
+                  <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9">
+                    <span className="flex-1 font-medium">Ad Compliance Checker</span>
+                    <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
+                  </div>
+                </Link>
                 <div className="flex items-center justify-between px-6 py-4 text-lg text-gray-9 hover:bg-gray-800 hover:text-white transition-colors">
                   <span>Ad Analyzer</span>
                   <span className="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded-full">Coming Soon</span>
