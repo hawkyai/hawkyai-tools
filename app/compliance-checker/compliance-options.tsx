@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ScientificButton } from "@/components/scientific-button"
 import { Shield, Accessibility, FileText, DollarSign, Upload, Sparkles, ArrowRight, ArrowDown } from "lucide-react"
 import ComplianceChecker from "./compliance-checker"
+import HawkyTimeline from "@/components/hawky-timeline"
 
 const complianceOptions = [
   {
@@ -119,6 +120,56 @@ export default function ComplianceOptions() {
             <ComplianceCard key={option.title} {...option} />
           ))}
         </div>
+      </div>
+      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-16">
+        <div className="text-center mb-10">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">Understanding Compliance Standards</h1>
+          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Learn about the importance of compliance and how Hawky helps you maintain regulatory standards</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="bg-[#111112] rounded-2xl p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <div className="flex items-center mb-4">
+              <div className="rounded-full w-12 h-12 flex items-center justify-center mr-4 bg-blue-900/20">
+                <Shield className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white">Why Compliance Matters</h3>
+            </div>
+            <p className="text-gray-400">
+              Ensuring your advertisements comply with regulatory standards is crucial for maintaining brand integrity, avoiding legal issues, and building trust with your audience. Non-compliance can lead to penalties, reputational damage, and loss of customer confidence.
+            </p>
+          </div>
+
+          <div className="bg-[#111112] rounded-2xl p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <div className="flex items-center mb-4">
+              <div className="rounded-full w-12 h-12 flex items-center justify-center mr-4 bg-purple-900/20">
+                <Accessibility className="w-6 h-6 text-purple-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white">WCAG Standards</h3>
+            </div>
+            <p className="text-gray-400">
+              Web Content Accessibility Guidelines (WCAG) ensure your content is accessible to people with disabilities. Following these standards makes your advertisements inclusive and reaches a wider audience while meeting legal requirements in many jurisdictions.
+            </p>
+          </div>
+
+          <div className="bg-[#111112] rounded-2xl p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <div className="flex items-center mb-4">
+              <div className="rounded-full w-12 h-12 flex items-center justify-center mr-4 bg-green-900/20">
+                <Sparkles className="w-6 h-6 text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white">Hawky's Role</h3>
+            </div>
+            <p className="text-gray-400">
+              Hawky provides automated compliance checking tools that help you verify your advertisements against multiple regulatory frameworks. Our AI-powered system ensures accuracy and saves time while helping you maintain compliance with industry standards.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-16">
+        <div className="text-center mb-10">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">How Hawky Works</h1>
+          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Discover how Hawky transforms your advertising compliance process</h2>
+        </div>
+        <HawkyTimeline />
       </div>
     </>
   )
