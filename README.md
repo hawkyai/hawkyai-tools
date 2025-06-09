@@ -6,5 +6,5 @@ https://hawky.ai/
 .
 
 Added Compliance Page
-Try Now Button
+Try Now Button.
 
