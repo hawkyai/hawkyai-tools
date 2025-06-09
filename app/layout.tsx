@@ -60,6 +60,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         {/* End Google Tag Manager */}
 
+        {/* Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=G-LMYBZ2HV2F`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-LMYBZ2HV2F');
+          `}
+        </Script>
+        {/* End Google Analytics */}
+
         {/* B2B Tracking Script */}
         <Script id="b2b-tracking" strategy="afterInteractive">
           {`
