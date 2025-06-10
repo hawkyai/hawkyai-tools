@@ -23,6 +23,28 @@ export const metadata: Metadata = {
   title: "Hawky.ai - Creative Factory for Performance Marketers",
   description:
     "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
+  openGraph: {
+    title: "Hawky.ai - Creative Factory for Performance Marketers",
+    description: "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
+    url: "https://hawky.ai",
+    siteName: "Hawky.ai",
+    images: [
+      {
+        url: "/hawky-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Hawky.ai - Creative Factory for Performance Marketers",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hawky.ai - Creative Factory for Performance Marketers",
+    description: "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
+    images: ["/hawky-logo.png"],
+  },
   icons: {
     icon: [
       { url: "/logos/Favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
