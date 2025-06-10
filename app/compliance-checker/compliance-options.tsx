@@ -14,7 +14,7 @@ const complianceOptions = [
     imgSrc: "/Asci-logo.png",
     imgAlt: "ASCI Logo",
     iconBg: "bg-pink-900/20",
-    buttonColor: "bg-pink-500 hover:bg-pink-600 focus:ring-pink-500 text-black",
+    buttonColor: "bg-white hover:bg-gray-100 focus:ring-gray-500 text-black",
     buttonText: "Check ASCI Compliance",
   },
   {
@@ -25,7 +25,7 @@ const complianceOptions = [
     imgSrc: "/Wcag.png",
     imgAlt: "WCAG Logo",
     iconBg: "bg-purple-900/20",
-    buttonColor: "bg-purple-500 hover:bg-purple-600 focus:ring-purple-500 text-black",
+    buttonColor: "bg-white hover:bg-gray-100 focus:ring-gray-500 text-black",
     buttonText: "Check WCAG Compliance",
   },
   {
@@ -36,7 +36,7 @@ const complianceOptions = [
     imgSrc: "/IRDAI.jpg",
     imgAlt: "IRDAI Logo",
     iconBg: "bg-yellow-900/20",
-    buttonColor: "bg-yellow-400 hover:bg-yellow-500 focus:ring-yellow-400 text-black",
+    buttonColor: "bg-white hover:bg-gray-100 focus:ring-gray-500 text-black",
     buttonText: "Check IRDAI Compliance",
   },
   {
@@ -47,7 +47,7 @@ const complianceOptions = [
     imgSrc: "/sebi-logo.png",
     imgAlt: "SEBI Logo",
     iconBg: "bg-green-900/20",
-    buttonColor: "bg-green-500 hover:bg-green-600 focus:ring-green-500 text-black",
+    buttonColor: "bg-white hover:bg-gray-100 focus:ring-gray-500 text-black",
     buttonText: "Check Finance Compliance",
   },
 ]
@@ -147,7 +147,7 @@ export default function ComplianceOptions() {
               <h3 className="text-xl font-bold text-white">WCAG Standards</h3>
             </div>
             <p className="text-gray-400">
-              Web Content Accessibility Guidelines (WCAG) ensure your content is accessible to people with disabilities. Following these standards makes your advertisements inclusive and reaches a wider audience while meeting legal requirements in many jurisdictions.
+              Web Content Accessibility Guidelines (WCAG) ensure your content is accessible to people with disabilities. Following these standards makes your advertisements inclusive and reaches a wider audience while meeting legal requirements in many jurisdictions, including the European Accessibility Act (EAA) which mandates digital accessibility across the EU.
             </p>
           </div>
 
@@ -166,8 +166,8 @@ export default function ComplianceOptions() {
       </div>
       <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-16">
         <div className="text-center mb-10">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">How Hawky Works</h1>
-          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Discover how Hawky transforms your advertising compliance process</h2>
+          {/* <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">How Hawky Works</h1>
+          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Discover how Hawky transforms your advertising compliance process</h2> */}
         </div>
         <HawkyTimeline />
       </div>
@@ -191,8 +191,12 @@ function ComplianceCard({ title, description, details, href, imgSrc, imgAlt, ico
   return (
     <div className="bg-[#111112] rounded-2xl shadow-lg flex flex-col p-6 min-h-[260px] border border-[#232329] w-full max-w-full transition hover:shadow-xl hover:border-gray-600/40">
       <div className="flex items-center mb-4">
-        <div className={`rounded-full w-12 h-12 flex items-center justify-center mr-4 bg-white/90 border border-gray-200`}>
-          <img src={imgSrc} alt={imgAlt} className="w-8 h-8 object-contain rounded-full" />
+        <div className={`rounded-lg w-14 h-14 flex items-center justify-center mr-4 bg-white p-2 ${iconBg}`}>
+          <img 
+            src={imgSrc} 
+            alt={imgAlt} 
+            className="w-full h-full object-contain" 
+          />
         </div>
         <div>
           <h3 className="text-xl font-extrabold text-white leading-tight">{title}</h3>
@@ -202,7 +206,7 @@ function ComplianceCard({ title, description, details, href, imgSrc, imgAlt, ico
       <p className="text-white text-base font-normal mb-6 flex-grow leading-snug">{details}</p>
       <Link href={href} className="mt-auto">
         <button
-          className={`w-full rounded-lg px-4 py-2.5 font-semibold text-base flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-black`}
+          className={`w-full rounded-lg px-4 py-2.5 font-semibold text-base flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${buttonColor}`}
         >
           {buttonText} <span className="ml-2">→</span>
         </button>
