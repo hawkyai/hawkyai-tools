@@ -163,46 +163,55 @@ export default function ComplianceOptions() {
           <Accordion type="single" collapsible className="w-full space-y-4">
             <AccordionItem value="item-1" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
-                Can I create ads for free using AI?
+                Q1: My Instagram promotion was not approved. Could it be accessibility?
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
-                Yes! Hawky offers a free tier that allows you to create and check ads for compliance. Our AI-powered tools help you generate ad content while ensuring it meets regulatory standards. You can start with basic features and upgrade as your needs grow.
+                Yes. Platforms are now factoring accessibility into ad approval—especially for EU users. Contrast issues, missing alt text, or image-based text can trigger rejections. Use hawky.ai/compliance-checker to find and fix these.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-2" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
-                How does AI help with ad creation and compliance?
+                Q2: Why are my ads getting rejected more often in Europe?
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
-                Our AI tools assist in multiple ways: generating creative content, suggesting improvements, and automatically checking for compliance with various standards like ASCI, WCAG, and EAA. The AI analyzes your ad content, images, and layout to ensure they meet accessibility and regulatory requirements.
+                The EU Accessibility Act mandates compliance with WCAG 2.1 AA, which platforms are now enforcing. Ads with inaccessible elements are automatically flagged or blocked.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-3" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
-                What is WCAG and EAA compliance?
+                Q3: My Instagram ad was approved but isn't delivering. What's going on?
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
-                WCAG (Web Content Accessibility Guidelines) and EAA (European Accessibility Act) are standards that ensure digital content is accessible to people with disabilities. This includes proper color contrast, text alternatives for images, keyboard navigation, and screen reader compatibility. Our tools help you meet these requirements automatically.
+                Even approved ads may be downranked due to poor user experience—such as autoplaying audio, visual clutter, or inaccessibility. These hurt your performance. Use the checker to ensure full compliance.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-4" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
-                How accurate is the AI compliance checker?
+                Q4: How can I fix a rejected ad and win an appeal?
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
-                Our AI compliance checker is highly accurate, trained on extensive regulatory guidelines and real-world examples. It can detect potential issues with text, images, and overall ad structure. However, we recommend reviewing the suggestions and consulting with legal experts for critical compliance matters.
+                Simply resubmitting doesn't work. Identify and fix the non-compliant elements first. Tools like hawky.ai/compliance-checker help you resolve specific WCAG issues.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-5" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
-                What types of ads can I create and check?
+                Q5: What accessibility issues pose the biggest risks in 2025 EU campaigns?
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
-                You can create and check various types of ads including social media posts, display ads, email marketing content, and website banners. Our system supports multiple formats and platforms, ensuring your ads are compliant regardless of where they'll be displayed.
+                Expect scrutiny on image-based text, low contrast, and flashing effects. These could lead to rejection or even legal risks. Audit creatives early with hawky.ai/compliance-checker.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q6: Can using text in images cause ad disapproval?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                Absolutely. Text in images isn't readable by screen readers and violates WCAG 2.1 SC 1.4.5. Replace with HTML text or ensure alternatives exist.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
