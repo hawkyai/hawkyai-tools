@@ -351,7 +351,7 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Select Compliance Standard</label>
+                <label className="block text-sm sm:text-base font-medium text-gray-300 mb-2">Select Compliance Standard</label>
                 <Select
                   value={selectedStandard}
                   onValueChange={(value) => {
@@ -362,23 +362,23 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
                   }}
                   disabled={fixedStandard}
                 >
-                  <SelectTrigger className="w-full hawky-input">
+                  <SelectTrigger className="w-full hawky-input text-sm sm:text-base py-2 sm:py-3">
                     <SelectValue placeholder="Select a compliance standard" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/90 border border-gray-800">
-                    <SelectItem value="asci">ASCI (Advertising Standards Council of India)</SelectItem>
-                    <SelectItem value="wcag">WCAG (Web Content Accessibility Guidelines)</SelectItem>
-                    <SelectItem value="irdai">IRDAI (Insurance Regulatory and Development Authority of India)</SelectItem>
-                    <SelectItem value="finance">Financial Advertisement Guidelines</SelectItem>
+                    <SelectItem value="asci" className="text-sm sm:text-base py-2">ASCI (Advertising Standards Council of India)</SelectItem>
+                    <SelectItem value="wcag" className="text-sm sm:text-base py-2">WCAG (Web Content Accessibility Guidelines)</SelectItem>
+                    <SelectItem value="irdai" className="text-sm sm:text-base py-2">IRDAI (Insurance Regulatory and Development Authority of India)</SelectItem>
+                    <SelectItem value="finance" className="text-sm sm:text-base py-2">Financial Advertisement Guidelines</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {selectedStandard === "irdai" && (
-                  <p className="text-xs text-amber-400 mt-1">Note: IRDAI is specifically for insurance advertisements</p>
+                  <p className="text-xs sm:text-sm text-amber-400 mt-1">Note: IRDAI is specifically for insurance advertisements</p>
                 )}
 
                 {selectedStandard === "finance" && (
-                  <p className="text-xs text-green-400 mt-1">
+                  <p className="text-xs sm:text-sm text-green-400 mt-1">
                     Note: Finance checker is specifically for financial advertisements, IPOs, and securities offerings
                   </p>
                 )}
