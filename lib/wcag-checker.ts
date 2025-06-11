@@ -33,37 +33,30 @@ Include ALL compliance checks in your response, not just violations. For each gu
 
 ### Evaluate the ad against the following WCAG 2.1 criteria:
 
-1. **1.1.1 Non-text Content (A)**
-   - Are all images or non-text content described with appropriate alt text?
-
-2. **1.4.3 Contrast (Minimum) (AA)**
+1. **1.4.3 Contrast (Minimum) (AA)**
    - Does all text maintain a minimum contrast ratio of 4.5:1 against its background?
    - Large text (18pt or 14pt bold): At least 3:1 contrast?
 
-3. **1.4.5 Images of Text (AA)**
-   - Are images of text avoided except where necessary (e.g., logos)?
-   - Is actual text used where possible instead of embedding text in images?
-
-4. **1.4.1 Use of Color (A)**
+2. **1.4.1 Use of Color (A)**
    - Is color not the only means of conveying information?
    - Are there backup indicators (text, icons, patterns)?
 
-5. **2.3.1 Three Flashes or Below Threshold (A)**
+3. **2.3.1 Three Flashes or Below Threshold (A)**
    - Does any animated content flash more than three times per second?
 
-6. **2.4.7 Focus Visible (AA)**
+4. **2.4.7 Focus Visible (AA)**
    - Is there a visible focus indicator for all interactive elements?
 
-7. **1.2.2 Captions (Pre-recorded) (A)**
+5. **1.2.2 Captions (Pre-recorded) (A)**
    - Are captions provided for all pre-recorded video content?
 
-8. **1.3.1 Info and Relationships (A)**
+6. **1.3.1 Info and Relationships (A)**
    - Is the content structure conveyed using semantic HTML (e.g., proper headings, lists)?
 
-9. **2.1.1 Keyboard (A)**
+7. **2.1.1 Keyboard (A)**
    - Can all functionality be used via keyboard only?
 
-10. **1.4.4 Resize Text (AA)**
+8. **1.4.4 Resize Text (AA)**
     - Can text be resized up to 200% without loss of content or functionality?
 
 After evaluating all criteria, determine the highest WCAG level (A, AA, or AAA) that the ad fully complies with:
