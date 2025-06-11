@@ -3,7 +3,7 @@ import Link from "next/link"
 import { ScientificButton } from "@/components/scientific-button"
 import { Shield, Accessibility, FileText, DollarSign, Upload, Sparkles, ArrowRight, ArrowDown } from "lucide-react"
 import ComplianceChecker from "./compliance-checker"
-import HawkyTimeline from "@/components/hawky-timeline"
+import { Footer } from "@/components/ui/footer"
 
 const complianceOptions = [
   {
@@ -164,13 +164,49 @@ export default function ComplianceOptions() {
           </div>
         </div>
       </div>
-      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-16">
-        <div className="text-center mb-10">
-          {/* <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">How Hawky Works</h1>
-          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Discover how Hawky transforms your advertising compliance process</h2> */}
+      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-8 sm:py-12 md:py-16">
+        <div className="text-center mb-6 sm:mb-8 md:mb-10">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white mb-2">Frequently Asked Questions</h1>
+          <h2 className="text-sm sm:text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto px-4">Everything you need to know about creating compliant ads with AI</h2>
         </div>
-        <HawkyTimeline />
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="bg-[#111112] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">Can I create ads for free using AI?</h3>
+            <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
+              Yes! Hawky offers a free tier that allows you to create and check ads for compliance. Our AI-powered tools help you generate ad content while ensuring it meets regulatory standards. You can start with basic features and upgrade as your needs grow.
+            </p>
+          </div>
+
+          <div className="bg-[#111112] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">How does AI help with ad creation and compliance?</h3>
+            <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
+              Our AI tools assist in multiple ways: generating creative content, suggesting improvements, and automatically checking for compliance with various standards like ASCI, WCAG, and EAA. The AI analyzes your ad content, images, and layout to ensure they meet accessibility and regulatory requirements.
+            </p>
+          </div>
+
+          <div className="bg-[#111112] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">What is WCAG and EAA compliance?</h3>
+            <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
+              WCAG (Web Content Accessibility Guidelines) and EAA (European Accessibility Act) are standards that ensure digital content is accessible to people with disabilities. This includes proper color contrast, text alternatives for images, keyboard navigation, and screen reader compatibility. Our tools help you meet these requirements automatically.
+            </p>
+          </div>
+
+          <div className="bg-[#111112] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">How accurate is the AI compliance checker?</h3>
+            <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
+              Our AI compliance checker is highly accurate, trained on extensive regulatory guidelines and real-world examples. It can detect potential issues with text, images, and overall ad structure. However, we recommend reviewing the suggestions and consulting with legal experts for critical compliance matters.
+            </p>
+          </div>
+
+          <div className="bg-[#111112] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">What types of ads can I create and check?</h3>
+            <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
+              You can create and check various types of ads including social media posts, display ads, email marketing content, and website banners. Our system supports multiple formats and platforms, ensuring your ads are compliant regardless of where they'll be displayed.
+            </p>
+          </div>
+        </div>
       </div>
+      <Footer />
     </>
   )
 }
