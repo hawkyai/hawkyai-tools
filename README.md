@@ -5,4 +5,4 @@ Tools:
 2. PH Launch- 12th June 
 3. Batch added
 4. User Privacy - Date updated
-5. Add Google Tags
+5. Add Google Tags (Check)
