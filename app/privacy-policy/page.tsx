@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           <div className="space-y-8">
             <section>
               <p className="text-gray-300">
-                Last updated: 15 Aug 2024
+                Last updated: 1 Jun 2025
               </p>
               <p className="text-gray-300 mt-4">
                 <a href="http://hawky.ai/" className="text-white hover:text-gray-300">Hawky.ai</a> ("we," "our," or "us") is committed to protecting the privacy of our users. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our services, including in connection with Meta (formerly Facebook) advertising accounts.
