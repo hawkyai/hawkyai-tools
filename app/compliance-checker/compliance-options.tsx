@@ -3,7 +3,8 @@ import Link from "next/link"
 import { ScientificButton } from "@/components/scientific-button"
 import { Shield, Accessibility, FileText, DollarSign, Upload, Sparkles, ArrowRight, ArrowDown } from "lucide-react"
 import ComplianceChecker from "./compliance-checker"
-import HawkyTimeline from "@/components/hawky-timeline"
+import { Footer } from "@/components/ui/footer"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 const complianceOptions = [
   {
@@ -110,17 +111,6 @@ export default function ComplianceOptions() {
         </div>
       </div>
       <HowHawkyWorks />
-      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-0 mb-16 mt-32">
-        <div className="text-center mb-10">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">Choose Your Compliance Standard</h1>
-          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Select the regulatory framework that applies to your advertisement for targeted compliance analysis.</h2>
-        </div>
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-          {complianceOptions.map((option) => (
-            <ComplianceCard key={option.title} {...option} />
-          ))}
-        </div>
-      </div>
       <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-16">
         <div className="text-center mb-10">
           <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">Understanding Compliance Standards</h1>
@@ -164,13 +154,70 @@ export default function ComplianceOptions() {
           </div>
         </div>
       </div>
-      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-16">
-        <div className="text-center mb-10">
-          {/* <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2">How Hawky Works</h1>
-          <h2 className="text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto">Discover how Hawky transforms your advertising compliance process</h2> */}
+      <div className="w-full max-w-full px-4 sm:px-8 lg:px-28 mx-auto py-8 sm:py-12 md:py-16">
+        <div className="text-center mb-6 sm:mb-8 md:mb-10">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white mb-2">Frequently Asked Questions</h1>
+          <h2 className="text-sm sm:text-base md:text-lg text-gray-400 font-normal max-w-2xl mx-auto px-4">Everything you need to know about creating compliant ads with AI</h2>
         </div>
-        <HawkyTimeline />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            <AccordionItem value="item-1" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q1: My Instagram promotion was not approved. Could it be accessibility?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                Yes. Platforms are now factoring accessibility into ad approval—especially for EU users. Contrast issues, missing alt text, or image-based text can trigger rejections. Use hawky.ai/compliance-checker to find and fix these.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q2: Why are my ads getting rejected more often in Europe?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                The EU Accessibility Act mandates compliance with WCAG 2.1 AA, which platforms are now enforcing. Ads with inaccessible elements are automatically flagged or blocked.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q3: My Instagram ad was approved but isn't delivering. What's going on?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                Even approved ads may be downranked due to poor user experience—such as autoplaying audio, visual clutter, or inaccessibility. These hurt your performance. Use the checker to ensure full compliance.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q4: How can I fix a rejected ad and win an appeal?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                Simply resubmitting doesn't work. Identify and fix the non-compliant elements first. Tools like hawky.ai/compliance-checker help you resolve specific WCAG issues.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q5: What accessibility issues pose the biggest risks in 2025 EU campaigns?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                Expect scrutiny on image-based text, low contrast, and flashing effects. These could lead to rejection or even legal risks. Audit creatives early with hawky.ai/compliance-checker.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-[#111112] rounded-xl sm:rounded-2xl border border-[#232329] hover:border-gray-600/40 transition-all duration-200">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold text-white hover:no-underline">
+                Q6: Can using text in images cause ad disapproval?
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 text-sm sm:text-base text-gray-400 leading-relaxed">
+                Absolutely. Text in images isn't readable by screen readers and violates WCAG 2.1 SC 1.4.5. Replace with HTML text or ensure alternatives exist.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
       </div>
+      <Footer />
     </>
   )
 }

@@ -98,156 +98,157 @@ export default function ComplianceResults({ results, standard, imageUrl, onBack,
         </Button>
       </div>
 
-      <div className="flex flex-col gap-6 w-full">
-        {/* Image Preview and Summary - Now at the top */}
-        <div className="grid md:grid-cols-2 gap-6 w-full">
-          <div className="hawky-card p-4 sm:p-6 overflow-hidden w-full">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Image Preview</h2>
-            <div className="relative rounded-md overflow-hidden bg-white">
-              {imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imageUrl || "/placeholder.svg"}
-                  alt="Ad preview"
-                  className="w-full object-contain"
-                  style={{ maxHeight: "400px" }}
-                />
-              )}
+        <div className="flex flex-col gap-6 w-full">
+          {/* Image Preview and Summary - Now at the top */}
+          <div className="grid md:grid-cols-2 gap-6 w-full">
+            <div className="hawky-card p-4 sm:p-6 overflow-hidden w-full">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Image Preview</h2>
+              <div className="relative rounded-md overflow-hidden bg-white">
+                {imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageUrl || "/placeholder.svg"}
+                    alt="Ad preview"
+                    className="w-full object-contain"
+                    style={{ maxHeight: "400px" }}
+                  />
+                )}
+              </div>
+              {/* <p className="text-gray-400 mt-4 text-sm">Highlighted areas show compliance issues</p> */}
             </div>
-            {/* <p className="text-gray-400 mt-4 text-sm">Highlighted areas show compliance issues</p> */}
-          </div>
 
-          <div className="hawky-card p-4 sm:p-6 overflow-hidden w-full">
-            {adTypeInfo && (
-              <div className="mb-6 p-4 bg-black/30 rounded-lg border border-gray-800/50">
-                <h3 className="text-lg font-medium mb-3 flex items-center text-white">
-                  <Info className="h-4 w-4 mr-2 text-white"/> Ad Information
-                </h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-white">
-                    <span className="text-gray-400">Type:</span>{" "}
-                    <span className="text-white font-medium capitalize">{adTypeInfo.ad_type}</span>
-                  </p>
-                  <p className="text-sm text-white">
-                    <span className="text-gray-400">Description:</span>{" "}
-                    <span className="text-white">{adTypeInfo.description}</span>
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {standard === "wcag" && (
-              <div className="mb-6 p-4 bg-black/30 rounded-lg border border-gray-800/50">
-                <h3 className="text-lg font-medium mb-3 flex items-center text-white">
-                  <Award className="h-4 w-4 mr-2 text-white" /> WCAG Compliance Level
-                </h3>
-                <div className="flex items-center mb-2">
-                  <span className={`hawky-badge hawky-badge-${wcagComplianceLevel.toLowerCase()}` + " text-white"}>
-                    {wcagComplianceLevel === "None" ? "Not WCAG Compliant" : `WCAG ${wcagComplianceLevel} Compliant`}
-                  </span>
-                </div>
-                <p className="text-sm text-white mt-2">
-                  {wcagComplianceLevel === "None"
-                    ? "This ad does not meet the minimum Level A compliance requirements."
-                    : wcagComplianceLevel === "A"
-                      ? "This ad meets all Level A compliance requirements but not all Level AA requirements."
-                      : wcagComplianceLevel === "AA"
-                        ? "This ad meets all Level A and AA compliance requirements but not all Level AAA requirements."
-                        : "This ad meets all Level A, AA, and AAA compliance requirements."}
-                </p>
-              </div>
-            )}
-
-            <h3 className="text-lg font-medium mb-3 text-white">Compliance Summary</h3>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="flex flex-col items-center p-3 bg-green-900/10 rounded-lg border border-green-900/20">
-                <CheckCircle className="h-5 w-5 text-green-400 mb-1" />
-                <span className="text-xs font-semibold text-green-400">Passed</span>
-                <span className="text-xl font-bold text-green-400">{statusCounts.pass || 0}</span>
-              </div>
-              <div className="flex flex-col items-center p-3 bg-yellow-900/10 rounded-lg border border-yellow-900/20">
-                <AlertTriangle className="h-5 w-5 text-yellow-400 mb-1" />
-                <span className="text-xs font-semibold text-yellow-400">Warnings</span>
-                <span className="text-xl font-bold text-yellow-400">{statusCounts.warning || 0}</span>
-              </div>
-              <div className="flex flex-col items-center p-3 bg-red-900/10 rounded-lg border border-red-900/20">
-                <AlertTriangle className="h-5 w-5 text-red-400 mb-1" />
-                <span className="text-xs font-semibold text-red-400">Failed</span>
-                <span className="text-xl font-bold text-red-400">{statusCounts.fail || 0}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Compliance Analysis - Now below as a full-width section */}
-        <div className="hawky-card p-4 sm:p-6 overflow-hidden w-full">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Compliance Analysis for {standardName}</h2>
-
-          {results.compliance_summary && (
-            <div className="mb-6 p-4 bg-black/30 rounded-lg border border-gray-800/50">
-              <p className="text-white break-words">{results.compliance_summary}</p>
-              {results.overall_rating && (
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-sm font-medium text-white">Overall Rating:</span>
-                  <span
-                    className={`hawky-badge ${
-                      results.overall_rating === "Compliant"
-                        ? "hawky-badge-pass text-green-400 border-green-400"
-                          : "hawky-badge-fail text-red-400 border-red-400"
-                    }`}
-                  >
-                    {results.overall_rating === "Partially Compliant" ? "Non-compliant" : results.overall_rating}
-                  </span>
+            <div className="hawky-card p-4 sm:p-6 overflow-hidden w-full">
+              {adTypeInfo && (
+                <div className="mb-6 p-4 bg-black/30 rounded-lg border border-gray-800/50">
+                  <h3 className="text-lg font-medium mb-3 flex items-center text-white">
+                    <Info className="h-4 w-4 mr-2 text-white"/> Ad Information
+                  </h3>
+                  <div className="space-y-2">
+                    <p className="text-sm text-white">
+                      <span className="text-gray-400">Type:</span>{" "}
+                      <span className="text-white font-medium capitalize">{adTypeInfo.ad_type}</span>
+                    </p>
+                    <p className="text-sm text-white">
+                      <span className="text-gray-400">Description:</span>{" "}
+                      <span className="text-white">{adTypeInfo.description}</span>
+                    </p>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
 
-          <div>
-            <Tabs defaultValue="all" onValueChange={setActiveFilter} value={activeFilter}>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                <h3 className="text-lg font-medium flex items-center text-white">
-                  <Filter className="h-4 w-4 mr-2 text-white" /> Filter Results
-                </h3>
-                <TabsList className="bg-black/50 border border-gray-800/50 w-full sm:w-auto">
-                  <TabsTrigger value="all" className="data-[state=active]:bg-gray-800 flex-1 sm:flex-auto text-white">
-                    All ({violations.length})
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="pass"
-                    className="data-[state=active]:bg-green-900/30 data-[state=active]:text-green-400 flex-1 sm:flex-auto"
-                  >
-                    Passed ({statusCounts.pass || 0})
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="warning"
-                    className="data-[state=active]:bg-yellow-900/30 data-[state=active]:text-yellow-400 flex-1 sm:flex-auto"
-                  >
-                    Warnings ({statusCounts.warning || 0})
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="fail"
-                    className="data-[state=active]:bg-red-900/30 data-[state=active]:text-red-400 flex-1 sm:flex-auto"
-                  >
-                    Failed ({statusCounts.fail || 0})
-                  </TabsTrigger>
-                </TabsList>
+              {standard === "wcag" && (
+                <div className="mb-6 p-4 bg-black/30 rounded-lg border border-gray-800/50">
+                  <h3 className="text-lg font-medium mb-3 flex items-center text-white">
+                    <Award className="h-4 w-4 mr-2 text-white" /> WCAG Compliance Level
+                  </h3>
+                  <div className="flex items-center mb-2">
+                    <span className={`hawky-badge hawky-badge-${wcagComplianceLevel.toLowerCase()}` + " text-white"}>
+                      {wcagComplianceLevel === "None" ? "Not WCAG Compliant" : `WCAG ${wcagComplianceLevel} Compliant`}
+                    </span>
+                  </div>
+                  <p className="text-sm text-white mt-2">
+                    {wcagComplianceLevel === "None"
+                      ? "This ad does not meet the minimum Level A compliance requirements."
+                      : wcagComplianceLevel === "A"
+                        ? "This ad meets all Level A compliance requirements but not all Level AA requirements."
+                        : wcagComplianceLevel === "AA"
+                          ? "This ad meets all Level A and AA compliance requirements but not all Level AAA requirements."
+                          : "This ad meets all Level A, AA, and AAA compliance requirements."}
+                  </p>
+                </div>
+              )}
+
+              <h3 className="text-lg font-medium mb-3 text-white">Compliance Summary</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col items-center p-3 bg-green-900/10 rounded-lg border border-green-900/20">
+                  <CheckCircle className="h-5 w-5 text-green-400 mb-1" />
+                  <span className="text-xs font-semibold text-green-400">Passed</span>
+                  <span className="text-xl font-bold text-green-400">{statusCounts.pass || 0}</span>
+                </div>
+                <div className="flex flex-col items-center p-3 bg-yellow-900/10 rounded-lg border border-yellow-900/20">
+                  <AlertTriangle className="h-5 w-5 text-yellow-400 mb-1" />
+                  <span className="text-xs font-semibold text-yellow-400">Warnings</span>
+                  <span className="text-xl font-bold text-yellow-400">{statusCounts.warning || 0}</span>
+                </div>
+                <div className="flex flex-col items-center p-3 bg-red-900/10 rounded-lg border border-red-900/20">
+                  <AlertTriangle className="h-5 w-5 text-red-400 mb-1" />
+                  <span className="text-xs font-semibold text-red-400">Failed</span>
+                  <span className="text-xl font-bold text-red-400">{statusCounts.fail || 0}</span>
+                </div>
               </div>
-
-              <TabsContent value="all" className="mt-0">
-                {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
-              </TabsContent>
-              <TabsContent value="pass" className="mt-0">
-                {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
-              </TabsContent>
-              <TabsContent value="warning" className="mt-0">
-                {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
-              </TabsContent>
-              <TabsContent value="fail" className="mt-0">
-                {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
-              </TabsContent>
-            </Tabs>
+            </div>
           </div>
+
+          {/* Compliance Analysis - Now below as a full-width section */}
+          <div className="hawky-card p-4 sm:p-6 overflow-hidden w-full">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Compliance Analysis for {standardName}</h2>
+
+            {results.compliance_summary && (
+              <div className="mb-6 p-4 bg-black/30 rounded-lg border border-gray-800/50">
+                <p className="text-white break-words">{results.compliance_summary}</p>
+                {results.overall_rating && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-sm font-medium text-white">Overall Rating:</span>
+                    <span
+                      className={`hawky-badge ${
+                        results.overall_rating === "Compliant"
+                          ? "hawky-badge-pass text-green-400 border-green-400"
+                            : "hawky-badge-fail text-red-400 border-red-400"
+                      }`}
+                    >
+                      {results.overall_rating === "Partially Compliant" ? "Non-compliant" : results.overall_rating}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            <p className="text-sm text-gray-500 mt-4 italic">This report was generated by Hawky AI and may contain errors. Hawky AI is not liable for any decisions made based on its contents.</p>
+
+            <div>
+              <Tabs defaultValue="all" onValueChange={setActiveFilter} value={activeFilter}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                  <h3 className="text-lg font-medium flex items-center text-white">
+                    <Filter className="h-4 w-4 mr-2 text-white" /> Filter Results
+                  </h3>
+                  <TabsList className="bg-black/50 border border-gray-800/50 w-full sm:w-auto">
+                    <TabsTrigger value="all" className="data-[state=active]:bg-gray-800 flex-1 sm:flex-auto text-white">
+                      All ({violations.length})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="pass"
+                      className="data-[state=active]:bg-green-900/30 data-[state=active]:text-green-400 flex-1 sm:flex-auto"
+                    >
+                      Passed ({statusCounts.pass || 0})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="warning"
+                      className="data-[state=active]:bg-yellow-900/30 data-[state=active]:text-yellow-400 flex-1 sm:flex-auto"
+                    >
+                      Warnings ({statusCounts.warning || 0})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="fail"
+                      className="data-[state=active]:bg-red-900/30 data-[state=active]:text-red-400 flex-1 sm:flex-auto"
+                    >
+                      Failed ({statusCounts.fail || 0})
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="all" className="mt-0">
+                  {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
+                </TabsContent>
+                <TabsContent value="pass" className="mt-0">
+                  {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
+                </TabsContent>
+                <TabsContent value="warning" className="mt-0">
+                  {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
+                </TabsContent>
+                <TabsContent value="fail" className="mt-0">
+                  {renderViolations(filteredViolations, expandedSections, toggleSection, standard)}
+                </TabsContent>
+              </Tabs>
+            </div>
         </div>
       </div>
     </div>
