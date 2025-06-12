@@ -22,6 +22,22 @@ export default function HeroSection() {
             <span className="text-white text-xs sm:text-sm">100% Free</span>
           </div>
         </div>
+        <div className="mt-8 flex justify-center">
+          <a 
+            href="https://www.producthunt.com/products/hawky-ai-ads-compliance-checker-2025?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ad&#0045;compliance&#0045;checker&#0045;by&#0045;hawky&#0045;ai" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex justify-center"
+          >
+            <img 
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=976578&theme=light&t=1749734881512" 
+              alt="Ad compliance checker by Hawky.ai - EAA 2025 free compliance checker tool | Product Hunt" 
+              style={{ width: "250px", height: "54px" }} 
+              width="250" 
+              height="54" 
+            />
+          </a>
+        </div>
       </div>
     </div>
   )
