@@ -15,15 +15,15 @@ let sheets: any = null
 try {
   const auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     },
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
 
   // Log authentication details (safely)
-  console.log('Google Auth configured with email:', process.env.GOOGLE_CLIENT_EMAIL)
-  console.log('Private key length:', process.env.GOOGLE_PRIVATE_KEY?.length || 0)
+  console.log('Google Auth configured with email:', process.env.GOOGLE_SHEETS_CLIENT_EMAIL)
+  console.log('Private key length:', process.env.GOOGLE_SHEETS_PRIVATE_KEY?.length || 0)
 
   sheets = google.sheets({ version: 'v4', auth })
 } catch (error) {
