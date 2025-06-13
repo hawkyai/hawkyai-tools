@@ -1,0 +1,16 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://hawky.ai/sitemap.xml
+
+# Disallow API routes
+Disallow: /api/
+
+# Disallow admin or private routes
+Disallow: /admin/
+Disallow: /private/
+
+# Crawl-delay for all bots
+Crawl-delay: 10 
