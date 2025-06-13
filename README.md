@@ -6,3 +6,4 @@ Tools:
 3. Batch added
 4. User Privacy - Date updated
 5. Add Google Tags (Check)
+6. .env
