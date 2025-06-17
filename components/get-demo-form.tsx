@@ -41,7 +41,6 @@ export function GetDemoForm() {
       setIsSubmitting(true)
       setSubmitError(null)
 
-      // Send data to our server-side API route
       const response = await fetch("/api/submit-form", {
         method: "POST",
         headers: {
@@ -53,35 +52,20 @@ export function GetDemoForm() {
       const result = await response.json()
 
       if (!response.ok) {
-        console.error("Form submission error:", result)
         throw new Error(result.error || "Error submitting form")
       }
 
-      // Store the form data for Calendly
-      setFormData(data)
-
-      // Move to the next step (Calendly) even if there was an issue with Sheety
-      // This ensures users can still book a demo even if the sheet update fails
+      // On success, show a message or proceed
+      setSubmitError(null)
+      console.log("Form submitted successfully:", result)
       setStep(2)
     } catch (error) {
-      console.error("Error submitting form:", error)
-
-      // Provide a helpful error message but still allow proceeding to Calendly
       if (error instanceof Error) {
-        setSubmitError(
-          `Note: There was an issue saving your information (${error.message}). You can still proceed to schedule your demo.`,
-        )
+        setSubmitError(`Error: ${error.message}. Please try again.`)
       } else {
-        setSubmitError("Note: There was an issue saving your information. You can still proceed to schedule your demo.")
+        setSubmitError("An unexpected error occurred.")
       }
-
-      // Store the form data anyway
-      setFormData(data)
-
-      // Option to proceed despite the error
-      setTimeout(() => {
-        setStep(2)
-      }, 3000) // Give user 3 seconds to read the error before proceeding
+      console.error("Submission error:", error)
     } finally {
       setIsSubmitting(false)
     }
