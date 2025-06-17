@@ -7,4 +7,4 @@ Tools:
 4. User Privacy - Date updated
 5. Add Google Tags (Check)
 6. .env
-7. Zoho CRM
+7. Zoho CRM Check
