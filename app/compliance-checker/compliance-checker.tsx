@@ -15,6 +15,7 @@ import { checkFinanceCompliance } from "@/lib/finance-checker"
 import { detectAdType, type AdTypeResult } from "@/lib/ad-type-detector"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useRouter } from "next/navigation"
+import { SimpleEmailPopup } from "@/components/simple-email-popup"
 
 // Add TypeScript declaration for window.dataLayer
 declare global {
@@ -52,6 +53,8 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
   const [adTypeError, setAdTypeError] = useState<string | null>(null)
   const [adTypeInfo, setAdTypeInfo] = useState<AdTypeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showEmailPopup, setShowEmailPopup] = useState(false)
+  const [emailSubmitted, setEmailSubmitted] = useState(false)
 
   // Remove routing from useEffect
   useEffect(() => {
@@ -199,6 +202,12 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       return
     }
 
+    // Show email popup first if not submitted
+    if (!emailSubmitted) {
+      setShowEmailPopup(true)
+      return
+    }
+
     // Clear any previous errors
     setAdTypeError(null)
     setError(null)
@@ -263,11 +272,19 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
     }
   }
 
+  const handleEmailSuccess = () => {
+    setEmailSubmitted(true)
+    setShowEmailPopup(false)
+    // Continue with analysis immediately
+    handleAnalyze()
+  }
+
   const resetAnalysis = () => {
     setAnalysisState("idle")
     setResults(null)
     setAdTypeError(null)
     setError(null)
+    setEmailSubmitted(false)
     trackEvent('compliance_analysis_reset', {
       standard: selectedStandard
     });
@@ -416,7 +433,16 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
     )
   }
 
-  return renderContent()
+  return (
+    <>
+      {renderContent()}
+      <SimpleEmailPopup
+        isOpen={showEmailPopup}
+        onClose={() => setShowEmailPopup(false)}
+        onSuccess={handleEmailSuccess}
+      />
+    </>
+  )
 }
 
 function getStandardFullName(standard: string): string {
