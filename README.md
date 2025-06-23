@@ -9,4 +9,4 @@ Tools:
 6. .env
 7. Zoho CRM Check
 8. Check the Base
-9. New Landing Page
+9. New Landing Page - changed
