@@ -8,3 +8,4 @@ Tools:
 5. Add Google Tags (Check)
 6. .env
 7. Zoho CRM Check
+8. Check the Base
