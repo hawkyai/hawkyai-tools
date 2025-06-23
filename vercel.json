@@ -1,5 +1,15 @@
 {
   "buildCommand": "pnpm vercel-build",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "rewrites": [
+         {
+           "source": "/compliance-checker/:path*",
+           "destination": "/compliance-checker/:path*"
+         },
+         {
+           "source": "/:path*",
+           "destination": "https://hawky.framer.website/:path*"
+         }
+     ]
 } 
