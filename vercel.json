@@ -4,6 +4,10 @@
   "framework": "nextjs",
   "rewrites": [
     {
+      "source": "/compliance-checker",
+      "destination": "/compliance-checker/"
+    },
+    {
       "source": "/compliance-checker/:path*",
       "destination": "/compliance-checker/:path*"
     },
