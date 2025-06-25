@@ -28,7 +28,7 @@ export function EmailCollectionPopup({ isOpen, onClose, onSuccess }: EmailCollec
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/send-otp", {
+      const response = await fetch("/compliance-checker/api/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +64,7 @@ export function EmailCollectionPopup({ isOpen, onClose, onSuccess }: EmailCollec
     setIsLoading(true)
     try {
       // First verify the OTP
-      const verifyResponse = await fetch("/api/verify-otp", {
+      const verifyResponse = await fetch("/compliance-checker/api/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export function EmailCollectionPopup({ isOpen, onClose, onSuccess }: EmailCollec
       }
 
       // If verification successful, store email in MongoDB
-      const storeResponse = await fetch("/api/store-email", {
+      const storeResponse = await fetch("/compliance-checker/api/store-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

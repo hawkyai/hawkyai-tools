@@ -26,7 +26,7 @@ export function EmailVerification({ onVerificationComplete }: EmailVerificationP
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/send-otp", {
+      const response = await fetch("/compliance-checker/api/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export function EmailVerification({ onVerificationComplete }: EmailVerificationP
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/verify-otp", {
+      const response = await fetch("/compliance-checker/api/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
