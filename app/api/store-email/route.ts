@@ -66,3 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to store email" }, { status: 500 })
   }
 } 
+
+export async function GET() {
+  return NextResponse.json({ data: "GET /api/store-email is working" });
+}
