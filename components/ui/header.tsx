@@ -44,12 +44,15 @@ export function Header() {
         {/* Desktop nav and button */}
         <div className="hidden md:flex flex-1 items-center justify-between w-full">
           <nav className="flex-1 flex justify-center">
-            <Link
-              href="/resources"
-              className="text-gray-300 text-base hover:text-white transition-colors"
+            <span
+              className="text-gray-300 text-base hover:text-white transition-colors cursor-pointer"
+              tabIndex={0}
+              role="button"
+              aria-label="Resources"
+              onClick={e => e.preventDefault()}
             >
               Resources
-            </Link>
+            </span>
           </nav>
           <div className="flex items-center min-w-[180px] justify-end">
             <a
