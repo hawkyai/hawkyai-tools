@@ -52,12 +52,12 @@ export function Header() {
             </Link>
           </nav>
           <div className="flex items-center min-w-[180px] justify-end">
-            <Link
-              href="/get-demo"
+            <a
+              href="https://hawky.ai/get-demo"
               className="bg-white text-black font-medium rounded-xl px-8 py-2 text-base shadow-none hover:bg-gray-100 transition"
             >
               Get Demo
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -74,13 +74,13 @@ export function Header() {
               </Link>
             </nav>
             <div className="w-full flex justify-center">
-              <Link
-                href="/get-demo"
+              <a
+                href="https://hawky.ai/get-demo"
                 className="bg-white text-black font-medium rounded-xl px-8 py-2 text-base shadow-none hover:bg-gray-100 transition"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Get Demo
-              </Link>
+              </a>
             </div>
           </div>
         )}
