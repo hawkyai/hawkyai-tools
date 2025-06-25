@@ -2,113 +2,51 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, Linkedin } from "lucide-react"
-import { useState } from "react"
 
-interface FooterProps {
-  showCreativesToggle?: boolean
-  creativesVisible?: boolean
-  onToggleCreatives?: (visible: boolean) => void
-}
-
-export function Footer({
-  showCreativesToggle = false,
-  creativesVisible = true,
-  onToggleCreatives,
-}: FooterProps) {
-  const [isToolsOpen, setIsToolsOpen] = useState(false)
-
+export function Footer() {
   return (
-    <footer className="relative z-10 border-t border-gray-3/20 bg-black">
-      <div className="container mx-auto px-4 py-12 md:px-6">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <div>
-            <div className="flex items-center">
-              <Image
-                src="/hawky-logo.png"
-                alt="Hawky Logo"
-                width={150}
-                height={40}
-                className="h-8 w-auto"
-              />
-            </div>
-            <p className="mt-4 text-sm text-gray-9">
-              AI-powered creative intelligence for predictable marketing outcomes.
-            </p>
-
-            <div className="mt-6">
-              <Link
-                href="/#how-it-works"
-                className="text-sm text-gray-9 hover:text-gray-12 transition-colors"
-              >
-                How Hawky works
-              </Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-medium text-gray-12">Company</h3>
-            <ul className="mt-4 space-y-2 text-sm">
-              <li>
-                <Link
-                  href="https://www.linkedin.com/company/hawky-ai/about/"
-                  className="text-gray-9 hover:text-gray-12 transition-colors"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="mailto:surender@hawky.ai"
-                  className="flex items-center text-gray-9 hover:text-gray-12 transition-colors"
-                >
-                  <Mail className="h-3.5 w-3.5 mr-1.5" />
-                  Contact
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/company/hawky-ai/jobs/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-9 hover:text-gray-12 transition-colors"
-                >
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.linkedin.com/company/hawky-ai/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-gray-9 hover:text-gray-12 transition-colors"
-                >
-                  <Linkedin className="h-3.5 w-3.5 mr-1.5" />
-                  LinkedIn
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-medium text-gray-12">Legal</h3>
-            <ul className="mt-4 space-y-2 text-sm">
-              <li>
-                <a
-                  href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-9 hover:text-gray-12 transition-colors"
-                >
-                  Privacy & Terms
-                </a>
-              </li>
-            </ul>
-          </div>
+    <footer className="w-full bg-black py-12 px-4 md:px-0">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-12 md:gap-0">
+        {/* Left Section */}
+        <div className="flex flex-col items-start md:w-1/3">
+          <Image
+            src="/compliance-checker/hawky-logo.png"
+            alt="Hawky Logo"
+            width={80}
+            height={80}
+            className="mb-4"
+            priority
+          />
+          <p className="text-white text-base mb-4">AI powered intelligence for better marketing outcomes</p>
+          <p className="text-gray-400 text-sm mb-1">©2025 Hawky.ai. All rights reserved</p>
+          <Link href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0" target="_blank" className="text-gray-400 text-sm hover:underline">Privacy & Terms</Link>
         </div>
 
-        <div className="mt-12 border-t border-gray-3/20 pt-8 text-center text-sm text-gray-9">
-          <p>© {new Date().getFullYear()} Hawky.ai. All rights reserved.</p>
+        {/* Center Section (empty for spacing) */}
+        <div className="hidden md:block md:w-1/3"></div>
+
+        {/* Right Section */}
+        <div className="flex flex-col md:flex-row gap-12 md:gap-24 md:w-1/3 justify-end">
+          {/* Company */}
+          <div>
+            <h3 className="text-white font-semibold mb-3">Company</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="https://www.linkedin.com/company/hawky-ai/jobs/" target="_blank" className="text-gray-400 hover:underline">Careers</Link>
+              </li>
+              <li>
+                <Link href="https://www.linkedin.com/company/hawky-ai/" target="_blank" className="text-gray-400 hover:underline">LinkedIn</Link>
+              </li>
+            </ul>
+          </div>
+          {/* Meet The Founders */}
+          <div>
+            <h3 className="text-white font-semibold mb-3">Meet The Founders</h3>
+            <ul className="space-y-2">
+              <li className="text-gray-400">Surender Selvaraj</li>
+              <li className="text-gray-400">DJ Sri Vigneshwar</li>
+            </ul>
+          </div>
         </div>
       </div>
     </footer>

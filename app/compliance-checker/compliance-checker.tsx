@@ -190,7 +190,13 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
   }
 
   const handleAnalyze = async () => {
+    console.log("Analyze button clicked")
+    console.log("File:", file)
+    console.log("Email submitted:", emailSubmitted)
+    console.log("Analysis state:", analysisState)
+    
     if (!file) {
+      console.log("No file selected")
       toast({
         title: "No image selected",
         description: "Please upload an image to analyze",
@@ -204,16 +210,19 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
 
     // Show email popup first if not submitted
     if (!emailSubmitted) {
+      console.log("Showing email popup")
       setShowEmailPopup(true)
       return
     }
 
+    console.log("Starting analysis...")
     // Clear any previous errors
     setAdTypeError(null)
     setError(null)
 
     // Validate ad type for selected standard
     const isValid = await validateAdTypeForStandard()
+    console.log("Ad type validation result:", isValid)
     if (!isValid) {
       trackEvent('compliance_analysis_error', {
         error_type: 'invalid_ad_type',
@@ -238,16 +247,19 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       formData.append("image", file)
       formData.append("standard", selectedStandard)
 
+      console.log("Sending request to /api/compliance")
       const response = await fetch("/api/compliance", {
         method: "POST",
         body: formData,
       })
 
+      console.log("Response status:", response.status)
       if (!response.ok) {
         throw new Error("Failed to analyze image")
       }
 
       const result = await response.json()
+      console.log("Analysis result:", result)
       setResults(result)
       setAnalysisState("complete")
       trackEvent('compliance_analysis_complete', {
