@@ -55,6 +55,8 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
   const [error, setError] = useState<string | null>(null)
   const [showEmailPopup, setShowEmailPopup] = useState(false)
   const [emailSubmitted, setEmailSubmitted] = useState(false)
+  const [runAfterEmail, setRunAfterEmail] = useState(false)
+  
 
   // Remove routing from useEffect
   useEffect(() => {
@@ -63,6 +65,14 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       standard: selectedStandard
     });
   }, [selectedStandard, defaultStandard, router])
+
+  useEffect(() => {
+  if (emailSubmitted && runAfterEmail) {
+    setRunAfterEmail(false) // reset to prevent re-runs
+    handleAnalyze()
+  }
+}, [emailSubmitted, runAfterEmail])
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -284,11 +294,12 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
     }
   }
 
-  const handleEmailSuccess = () => {
-    setEmailSubmitted(true)
-    // Continue with analysis immediately
-    handleAnalyze()
-  }
+const handleEmailSuccess = () => {
+  setEmailSubmitted(true)
+  setShowEmailPopup(false)
+  setRunAfterEmail(true)
+}
+
 
   const resetAnalysis = () => {
     setAnalysisState("idle")
