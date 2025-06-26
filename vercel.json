@@ -20,6 +20,10 @@
       "destination": "https://hawky.framer.website/get-demo"
     },
     {
+      "source": "/waitlist",
+      "destination": "https://hawky.framer.website/waitlist"
+    },
+    {
       "source": "/",
       "destination": "https://hawky.framer.website/"
     },
