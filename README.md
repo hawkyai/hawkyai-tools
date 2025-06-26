@@ -10,5 +10,5 @@ Tools:
 7. Zoho CRM Check
 8. Check the Base
 9. New Landing Page - changed
-10. Compliance Checker (fixes - Method)..
+10. Compliance Checker (fixes - Method)...
  
