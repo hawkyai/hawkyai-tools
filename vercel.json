@@ -16,6 +16,10 @@
       "destination": "/compliance-checker/:path*"
     },
     {
+      "source": "/get-demo",
+      "destination": "https://hawky.framer.website/get-demo"
+    },
+    {
       "source": "/",
       "destination": "https://hawky.framer.website/"
     },
