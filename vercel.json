@@ -4,6 +4,10 @@
   "framework": "nextjs",
   "rewrites": [
     {
+      "source": "/compliance-checker/api/:match*",
+      "destination": "/compliance-checker/api/:match*"
+    },
+    {
       "source": "/compliance-checker",
       "destination": "/compliance-checker/"
     },
@@ -16,8 +20,8 @@
       "destination": "https://hawky.framer.website/"
     },
     {
-      "source": "/:path*",
-      "destination": "https://hawky.framer.website/:path*"
+      "source": "/((?!compliance-checker).)*",
+      "destination": "https://hawky.framer.website/$1"
     }
   ]
 }
