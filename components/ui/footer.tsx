@@ -19,7 +19,10 @@ export function Footer() {
           />
           <p className="text-white text-base mb-4">AI powered intelligence for better marketing outcomes</p>
           <p className="text-gray-400 text-sm mb-1">©2025 Hawky.ai. All rights reserved</p>
-          <Link href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0" target="_blank" className="text-gray-400 text-sm hover:underline">Privacy & Terms</Link>
+          <div className="flex flex-col space-y-1">
+            <Link href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0" target="_blank" className="text-gray-400 text-sm hover:underline">Privacy Policy</Link>
+            <Link href="https://boundless-group-558.notion.site/Hawky-ai-Privacy-Policy-7b225ca0295c40a09a365f2fbee46ef0" target="_blank" className="text-gray-400 text-sm hover:underline">Terms and Conditions</Link>
+          </div>
         </div>
 
         {/* Center Section (empty for spacing) */}
@@ -35,7 +38,7 @@ export function Footer() {
                 <Link href="https://www.linkedin.com/company/hawky-ai/jobs/" target="_blank" className="text-gray-400 hover:underline">Careers</Link>
               </li>
               <li>
-                <Link href="https://www.linkedin.com/company/hawky-ai/" target="_blank" className="text-gray-400 hover:underline">LinkedIn</Link>
+                <Link href="https://www.linkedin.com/company/hawky-ai/posts/?feedView=all" target="_blank" className="text-gray-400 hover:underline">LinkedIn</Link>
               </li>
             </ul>
           </div>
@@ -43,8 +46,12 @@ export function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-3">Meet The Founders</h3>
             <ul className="space-y-2">
-              <li className="text-gray-400">Surender Selvaraj</li>
-              <li className="text-gray-400">DJ Sri Vigneshwar</li>
+              <li>
+                <Link href="https://www.linkedin.com/in/say2surender/" target="_blank" className="text-gray-400 hover:underline">Surender Selvaraj</Link>
+              </li>
+              <li>
+                <Link href="https://www.linkedin.com/in/dj-sri-vigneshwar/" target="_blank" className="text-gray-400 hover:underline">DJ Sri Vigneshwar</Link>
+              </li>
             </ul>
           </div>
         </div>

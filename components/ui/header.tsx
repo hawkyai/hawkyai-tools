@@ -20,7 +20,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:justify-between gap-4 md:gap-0">
         {/* Logo */}
         <div className="flex items-center justify-between w-full md:w-auto">
-          <Link href="/" className="flex items-center">
+          <a href="https://hawky.ai/" className="flex items-center">
             <Image
               src="/compliance-checker/hawky-logo.png"
               alt="Hawky Logo"
@@ -30,7 +30,7 @@ export function Header() {
               sizes="(max-width: 768px) 64px, 96px"
               priority
             />
-          </Link>
+          </a>
           {/* Mobile menu button */}
           <button
             className="md:hidden p-2 rounded focus:outline-none text-white"
@@ -42,18 +42,7 @@ export function Header() {
         </div>
 
         {/* Desktop nav and button */}
-        <div className="hidden md:flex flex-1 items-center justify-between w-full">
-          <nav className="flex-1 flex justify-center">
-            <span
-              className="text-gray-300 text-base hover:text-white transition-colors cursor-pointer"
-              tabIndex={0}
-              role="button"
-              aria-label="Resources"
-              onClick={e => e.preventDefault()}
-            >
-              Resources
-            </span>
-          </nav>
+        <div className="hidden md:flex flex-1 items-center justify-end">
           <div className="flex items-center min-w-[180px] justify-end">
             <a
               href="https://hawky.ai/get-demo"
@@ -67,15 +56,6 @@ export function Header() {
         {/* Mobile nav and button (dropdown) */}
         {mobileMenuOpen && (
           <div className="w-full flex flex-col items-center gap-4 mt-4 md:hidden animate-fade-in">
-            <nav className="w-full flex justify-center">
-              <Link
-                href="/resources"
-                className="text-gray-300 text-base hover:text-white transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Resources
-              </Link>
-            </nav>
             <div className="w-full flex justify-center">
               <a
                 href="https://hawky.ai/get-demo"
