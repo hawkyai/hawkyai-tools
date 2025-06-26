@@ -286,7 +286,6 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
 
   const handleEmailSuccess = () => {
     setEmailSubmitted(true)
-    setShowEmailPopup(false)
     // Continue with analysis immediately
     handleAnalyze()
   }
