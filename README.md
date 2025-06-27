@@ -11,5 +11,5 @@ Tools:
 8. Check the Base
 9. New Landing Page - changed
 10. Compliance Checker (fixes - Method)....
-11. Waitlist CRM Done
+11. Waitlist CRM Done - 
 12. 
