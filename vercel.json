@@ -24,6 +24,10 @@
       "destination": "https://hawky.framer.website/terms-conditions"
     },
     {
+      "source": "/creative-ecosystem",
+      "destination": "https://hawky.framer.website/creative-ecosystem"
+    },
+    {
       "source": "/",
       "destination": "https://hawky.framer.website/"
     },
