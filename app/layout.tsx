@@ -153,7 +153,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           async
         />
       </head>
-      <body className={`${sourceSans.className} ${sourceSans.variable} ${raleway.variable}`}>
+      <body suppressHydrationWarning={true} className={`${sourceSans.className} ${sourceSans.variable} ${raleway.variable}`}>
         {/* Google Tag Manager (noscript) - Original */}
         <noscript>
           <iframe
