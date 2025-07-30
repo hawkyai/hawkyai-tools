@@ -20,6 +20,7 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://hawky.ai'),
   title: "Hawky.ai - Creative Factory for Performance Marketers",
   description:
     "Transform your marketing performance with Hawky.ai's AI-powered creative factory. Generate, analyze, and optimize high-performing ad creatives at scale.",
