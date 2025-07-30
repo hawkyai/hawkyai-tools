@@ -257,8 +257,8 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
       formData.append("image", file)
       formData.append("standard", selectedStandard)
 
-      console.log("Sending request to /compliance-checker/api/compliance")
-      const response = await fetch("/compliance-checker/api/compliance", {
+      console.log("Sending request to /api/compliance")
+      const response = await fetch("/api/compliance", {
         method: "POST",
         body: formData,
       })

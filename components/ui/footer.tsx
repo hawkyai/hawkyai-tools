@@ -10,7 +10,7 @@ export function Footer() {
         {/* Left Section */}
         <div className="flex flex-col items-start md:w-1/3">
           <Image
-            src="/compliance-checker/hawky-logo.png"
+            src="/hawky-logo.png"
             alt="Hawky Logo"
             width={80}
             height={80}

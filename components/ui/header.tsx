@@ -22,7 +22,7 @@ export function Header() {
         <div className="flex items-center justify-between w-full md:w-auto">
           <a href="https://hawky.ai/" className="flex items-center">
             <Image
-              src="/compliance-checker/hawky-logo.png"
+              src="/hawky-logo.png"
               alt="Hawky Logo"
               width={120}
               height={120}

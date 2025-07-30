@@ -41,7 +41,7 @@ export function GetDemoForm() {
       setIsSubmitting(true)
       setSubmitError(null)
 
-      const response = await fetch("/compliance-checker/api/store-email", {
+      const response = await fetch("/api/store-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -113,7 +113,7 @@ export default function AdAnalyzerPage() {
 
     setIsVerifying(true)
     try {
-      const response = await fetch("/compliance-checker/api/send-otp", {
+      const response = await fetch("/api/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -148,7 +148,7 @@ export default function AdAnalyzerPage() {
 
     setIsVerifying(true)
     try {
-      const response = await fetch("/compliance-checker/api/verify-otp", {
+      const response = await fetch("/api/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

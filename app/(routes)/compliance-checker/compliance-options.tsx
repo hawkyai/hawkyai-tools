@@ -6,7 +6,7 @@ import ComplianceChecker from "./compliance-checker"
 import { Footer } from "@/components/ui/footer"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
-const complianceOptions = [
+const complianceOptions = [ 
   {
     title: "ASCI",
     description: "Advertising Standards Council of India",

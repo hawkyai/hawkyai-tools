@@ -9,8 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: '/compliance-checker',
-  assetPrefix: '/compliance-checker/',
 }
 
 export default nextConfig

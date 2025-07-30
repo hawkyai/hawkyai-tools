@@ -1,5 +1,5 @@
-import ComplianceCheckerPage from "./compliance-checker/page";
+import LandingPage from "./landing/page";
 
 export default function Home() {
-  return <ComplianceCheckerPage />;
+  return <LandingPage />;
 }
