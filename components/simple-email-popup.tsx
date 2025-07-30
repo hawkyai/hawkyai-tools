@@ -10,7 +10,7 @@ import { Loader2, Mail, Sparkles, CheckCircle } from "lucide-react"
 interface SimpleEmailPopupProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (emailData?: { email: string; name?: string; message?: string }) => void
 }
 
 export function SimpleEmailPopup({ isOpen, onClose, onSuccess }: SimpleEmailPopupProps) {
@@ -62,7 +62,7 @@ export function SimpleEmailPopup({ isOpen, onClose, onSuccess }: SimpleEmailPopu
         onClose()
         setEmail("")
         setIsSuccess(false)
-        onSuccess()
+        onSuccess({ email })
         toast.success("Starting analysis...")
       }, 1500)
 

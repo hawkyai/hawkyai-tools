@@ -70,34 +70,55 @@ export async function POST(request: Request) {
     const submissionId = uuidv4()
     const timestamp = new Date().toISOString()
 
-    // Create lead in Zoho CRM
-    const zohoResult = await createZohoLead(formData, submissionId)
-    if (!zohoResult.success) {
-      console.error("Zoho CRM error:", zohoResult.error)
-      // Continue to Slack notification even if Zoho fails
-    }
+    // Check if this is a compliance checker email submission
+    const isComplianceCheckerSubmission = formData.text && formData.text.includes('compliance checker')
 
-    // Send Slack notification
-    const slackResult = await sendSlackNotification(formData, submissionId)
-    if (!slackResult.success) {
-      console.error("Slack notification error:", slackResult.error)
-    }
-
-    // Return success if either Zoho or Slack succeeded
-    if (zohoResult.success || slackResult.success) {
-      return NextResponse.json({ 
-        success: true, 
-        data: zohoResult.data,
-        zohoSuccess: zohoResult.success,
-        slackSuccess: slackResult.success
-      })
+    if (isComplianceCheckerSubmission) {
+      // Handle compliance checker email submission - only send to Slack
+      const slackResult = await sendComplianceCheckerSlackNotification(formData, submissionId)
+      if (slackResult.success) {
+        return NextResponse.json({ 
+          success: true, 
+          slackSuccess: slackResult.success
+        })
+      } else {
+        return NextResponse.json({ 
+          success: false, 
+          error: "Slack notification failed",
+          slackError: slackResult.error
+        }, { status: 500 })
+      }
     } else {
-      return NextResponse.json({ 
-        success: false, 
-        error: "Both Zoho CRM and Slack notifications failed",
-        zohoError: zohoResult.error,
-        slackError: slackResult.error
-      }, { status: 500 })
+      // Handle regular form submission - send to both Zoho and Slack
+      // Create lead in Zoho CRM
+      const zohoResult = await createZohoLead(formData, submissionId)
+      if (!zohoResult.success) {
+        console.error("Zoho CRM error:", zohoResult.error)
+        // Continue to Slack notification even if Zoho fails
+      }
+
+      // Send Slack notification
+      const slackResult = await sendSlackNotification(formData, submissionId)
+      if (!slackResult.success) {
+        console.error("Slack notification error:", slackResult.error)
+      }
+
+      // Return success if either Zoho or Slack succeeded
+      if (zohoResult.success || slackResult.success) {
+        return NextResponse.json({ 
+          success: true, 
+          data: zohoResult.data,
+          zohoSuccess: zohoResult.success,
+          slackSuccess: slackResult.success
+        })
+      } else {
+        return NextResponse.json({ 
+          success: false, 
+          error: "Both Zoho CRM and Slack notifications failed",
+          zohoError: zohoResult.error,
+          slackError: slackResult.error
+        }, { status: 500 })
+      }
     }
   } catch (error: any) {
     console.error("Server error:", error)
@@ -240,6 +261,62 @@ async function sendSlackNotification(formData: any, submissionId: string) {
     return { success: true }
   } catch (error: unknown) {
     console.error("Error sending Slack notification:", error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+async function sendComplianceCheckerSlackNotification(formData: any, submissionId: string) {
+  if (!SLACK_WEBHOOK_URL) {
+    console.warn("Slack webhook URL not configured")
+    return { success: false, error: "Webhook not configured" }
+  }
+
+  try {
+    const message = {
+      blocks: [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "🔍 New Compliance Checker Email",
+            emoji: true
+          }
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: formData.text || "No message content"
+          }
+        },
+        {
+          type: "context",
+          elements: [
+            {
+              type: "mrkdwn",
+              text: `*Submission ID:* ${submissionId} | *Timestamp:* ${new Date().toLocaleString()}`
+            }
+          ]
+        }
+      ]
+    }
+
+    const slackRes = await fetch(SLACK_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    })
+    const slackText = await slackRes.text()
+    console.log("Compliance checker Slack response status:", slackRes.status)
+    console.log("Compliance checker Slack response text:", slackText)
+    if (!slackRes.ok) {
+      throw new Error(`Slack webhook failed: ${slackRes.status} - ${slackText}`)
+    }
+    return { success: true }
+  } catch (error: unknown) {
+    console.error("Error sending compliance checker Slack notification:", error)
     return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }

@@ -294,10 +294,28 @@ export default function ComplianceChecker({ defaultStandard = "asci", fixedStand
     }
   }
 
-const handleEmailSuccess = () => {
+const handleEmailSuccess = async (emailData?: { email: string; name?: string; message?: string }) => {
   setEmailSubmitted(true)
   setShowEmailPopup(false)
   setRunAfterEmail(true)
+
+  // Send to Slack webhook
+  try {
+    const slackPayload = {
+      text: `New compliance checker email submission!\nEmail: ${emailData?.email || 'Not provided'}\nCompliance Standard: ${selectedStandard}`
+    }
+
+    await fetch('/api/submit-form', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(slackPayload)
+    })
+  } catch (error) {
+    console.error('Error sending to Slack:', error)
+    // Don't show error to user, just log it
+  }
 }
 
 
