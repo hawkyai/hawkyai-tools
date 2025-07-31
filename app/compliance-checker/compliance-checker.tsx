@@ -361,7 +361,7 @@ const handleEmailSuccess = async (emailData?: { email: string; name?: string; me
             <p className="text-gray-400 max-w-2xl mx-auto">{getStandardDescription(selectedStandard)}</p>
           </div>
         )}
-        <div className="w-full max-w-4xl hawky-card p-8">
+        <div className="w-full max-w-4xl hawky-card p-4">
           {error && (
             <Alert variant="destructive" className="mb-6 bg-red-900/20 border-red-500/30">
               <AlertCircle className="h-4 w-4" />
