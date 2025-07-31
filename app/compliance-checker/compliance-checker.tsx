@@ -352,7 +352,7 @@ const handleEmailSuccess = async (emailData?: { email: string; name?: string; me
     }
 
     return (
-      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-2 px-4">
         {!hideTitleDescription && (
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold mb-4 text-white">
