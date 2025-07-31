@@ -16,7 +16,7 @@ export function Header() {
   if (!mounted) return null;
 
   return (
-    <header className="w-full bg-black py-4 px-4 md:px-0">
+    <header className="w-full bg-black py-0 px-4 md:px-0">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:justify-between gap-4 md:gap-0">
         {/* Logo */}
         <div className="flex items-center justify-between w-full md:w-auto">
