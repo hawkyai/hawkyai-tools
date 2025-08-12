@@ -246,7 +246,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         success: false, 
         error: "Email is required" 
-      }, { status: 400 });
+      }, { 
+        status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      });
     }
 
     if (!data.name && !data.fullName) {
@@ -254,7 +261,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         success: false, 
         error: "Full Name is required" 
-      }, { status: 400 });
+      }, { 
+        status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      });
     }
 
     console.log('✅ Input validation passed');
@@ -297,6 +311,12 @@ export async function POST(request: Request) {
           zohoError: zohoResult.error || null,
           slackError: slackResult.error || null
         }
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
       })
     } else {
       console.log('❌ Both Zoho CRM and Slack notifications failed');
@@ -305,7 +325,14 @@ export async function POST(request: Request) {
         error: "Both Zoho CRM and Slack notifications failed",
         zohoError: zohoResult.error,
         slackError: slackResult.error
-      }, { status: 500 })
+      }, { 
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      })
     }
   } catch (error: any) {
     console.error("❌ Error in waitlist API (POST):", error);
@@ -314,7 +341,14 @@ export async function POST(request: Request) {
       success: false, 
       error: errorMessage || "Failed to process waitlist data",
       details: error instanceof Error ? error.stack : undefined
-    }, { status: 500 });
+    }, { 
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
   }
 }
 
@@ -345,5 +379,23 @@ export async function GET() {
       hasZohoClientSecret: !!ZOHO_CLIENT_SECRET,
       hasZohoRefreshToken: !!process.env.ZOHO_REFRESH_TOKEN
     }
+  }, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }
   });
-} 
+}
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
