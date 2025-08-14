@@ -10,9 +10,9 @@ export default function HeroSection() {
             className="flex justify-center"
           >
             <img
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=976578&theme=light&t=1749734881512"
+              src="https://framerusercontent.com/images/UqGTgVW4hGTcmQVhpMiWDxcGCxM.svg"
               alt="Ad compliance checker by Hawky.ai - EAA 2025 free compliance checker tool | Product Hunt"
-              style={{ width: "180px", height: "30px" }}
+              style={{ width: "180px", height: "37px" }}
               width="250"
               height="54"
             />
