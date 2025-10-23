@@ -1,0 +1,182 @@
+name: Deploy to Labs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  ACR_NAME: acrhawkyai
+  RESOURCE_GROUP: rg-hawkyai-staging
+  CONTAINER_APP_NAME: ca-hawkyai-labs
+  CONTAINER_APP_ENV: cae-hawkyai-staging
+  IMAGE_NAME: hawkyai-labs
+  KV_NAME: kvhawkyai
+  SUBSCRIPTION_ID: 192d2bcd-429c-42f5-811b-48a95f8c506f
+  CUSTOM_DOMAIN: labs.hawky.ai
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+    
+    - name: 🔐 Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: 🐳 Build and push to ACR
+      run: |
+        az acr build \
+          --registry $ACR_NAME \
+          --image $IMAGE_NAME:${{ github.sha }} \
+          --image $IMAGE_NAME:latest \
+          --file Dockerfile \
+          .
+    
+    - name: 🚀 Create Container App (first deployment)
+      continue-on-error: true
+      run: |
+        az containerapp create \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --environment $CONTAINER_APP_ENV \
+          --image $ACR_NAME.azurecr.io/$IMAGE_NAME:latest \
+          --target-port 3000 \
+          --ingress external \
+          --registry-server $ACR_NAME.azurecr.io \
+          --registry-username acrhawkyai \
+          --registry-password "oun9b74bXuMp2pzA5/Xyr9wMtvMLNiW4rv6ME8h3Qq+ACRBNo9Ru" \
+          --cpu 1.0 \
+          --memory 2.0Gi \
+          --min-replicas 2 \
+          --max-replicas 5 \
+          --env-vars \
+            "NODE_ENV=production" \
+            "MONGODB_DB=hawkyai" \
+            "AWS_REGION=ap-south-1" \
+            "AWS_S3_BUCKET=hawky-ai-static-tryout" \
+            "ELASTICSEARCH_CLOUD_ID=h-staging-ES:Y2VudHJhbGluZGlhLmF6dXJlLmVsYXN0aWMtY2xvdWQuY29tOjkyNDMkYjA5NWRmNDQ1OWQxNGUwMWI3MjMwMDU3ZjkwNTNhZTYkMmYzNjJkZTkyNWRjNDAzMGJiODU5NzFmNGFkZDA0ODQ=" \
+            "ELASTICSEARCH_IMAGE_INDEX=image_competitors_analysis" \
+            "ELASTICSEARCH_VIDEO_INDEX=video_competitors_analysis" \
+            "EMAIL_FROM=hawky.ai@gmail.com" \
+            "EMAIL_SERVER_HOST=smtp.example.com" \
+            "EMAIL_SERVER_PORT=587" \
+            "EMAIL_SERVER_USER=hawky.ai@gmail.com" \
+            "GOOGLE_CLIENT_ID=896125824463-ru2dhbl8mtscj928kagc8346cl681k0b.apps.googleusercontent.com" \
+            "NEXTAUTH_URL=https://$CUSTOM_DOMAIN"
+    
+    - name: 🔐 Enable Managed Identity
+      continue-on-error: true
+      run: |
+        az containerapp identity assign \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --system-assigned
+    
+    - name: 🔑 Grant Key Vault Access
+      run: |
+        PRINCIPAL_ID=$(az containerapp identity show \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --query principalId -o tsv)
+        
+        az role assignment create \
+          --role "Key Vault Secrets User" \
+          --assignee-object-id $PRINCIPAL_ID \
+          --assignee-principal-type ServicePrincipal \
+          --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/mongodb-prod-rg/providers/Microsoft.KeyVault/vaults/$KV_NAME \
+          2>/dev/null || echo "✅ Role assignment already exists"
+    
+    - name: 🔐 Add Secrets from Key Vault
+      run: |
+        az containerapp secret set \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --secrets \
+            mongodb-uri=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/MONGODB-URI,identityref:system \
+            aws-access-key-id=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/AWS-ACCESS-KEY-ID,identityref:system \
+            aws-secret-access-key=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/AWS-SECRET-ACCESS-KEY,identityref:system \
+            elasticsearch-api-key=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ELASTICSEARCH-API-KEY,identityref:system \
+            google-client-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/GOOGLE-CLIENT-SECRET,identityref:system \
+            nextauth-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/NEXTAUTH-SECRET,identityref:system \
+            resend-api-key=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/RESEND-API-KEY,identityref:system \
+            email-server-password=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/EMAIL-SERVER-PASSWORD,identityref:system \
+            slack-error-webhook-url=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/SLACK-ERROR-WEBHOOK-URL,identityref:system \
+            slack-webhook-url=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/SLACK-WEBHOOK-URL,identityref:system \
+            vercel-oidc-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/VERCEL-OIDC-TOKEN,identityref:system \
+            zoho-access-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-ACCESS-TOKEN,identityref:system \
+            zoho-client-id=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-ID,identityref:system \
+            zoho-client-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-SECRET,identityref:system \
+            zoho-refresh-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-REFRESH-TOKEN,identityref:system
+    
+    - name: 🔄 Update Container App
+      run: |
+        az containerapp update \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --image $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} \
+          --set-env-vars \
+            "MONGODB_URI=secretref:mongodb-uri" \
+            "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
+            "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
+            "ELASTICSEARCH_API_KEY=secretref:elasticsearch-api-key" \
+            "GOOGLE_CLIENT_SECRET=secretref:google-client-secret" \
+            "NEXTAUTH_SECRET=secretref:nextauth-secret" \
+            "RESEND_API_KEY=secretref:resend-api-key" \
+            "EMAIL_SERVER_PASSWORD=secretref:email-server-password" \
+            "SLACK_ERROR_WEBHOOK_URL=secretref:slack-error-webhook-url" \
+            "SLACK_WEBHOOK_URL=secretref:slack-webhook-url" \
+            "VERCEL_OIDC_TOKEN=secretref:vercel-oidc-token" \
+            "ZOHO_ACCESS_TOKEN=secretref:zoho-access-token" \
+            "ZOHO_CLIENT_ID=secretref:zoho-client-id" \
+            "ZOHO_CLIENT_SECRET=secretref:zoho-client-secret" \
+            "ZOHO_REFRESH_TOKEN=secretref:zoho-refresh-token" \
+            "NEXTAUTH_URL=https://$CUSTOM_DOMAIN"
+    
+    - name: 🔀 Enable Multiple Revisions
+      run: |
+        az containerapp revision set-mode \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --mode multiple
+    
+    - name: 🌐 Configure Custom Domain
+      run: |
+        DOMAIN_EXISTS=$(az containerapp hostname list \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --query "[?name=='$CUSTOM_DOMAIN'].name" -o tsv)
+        
+        if [ -z "$DOMAIN_EXISTS" ]; then
+          echo "➕ Adding custom domain: $CUSTOM_DOMAIN"
+          az containerapp hostname add \
+            --hostname $CUSTOM_DOMAIN \
+            --name $CONTAINER_APP_NAME \
+            --resource-group $RESOURCE_GROUP
+          
+          az containerapp hostname bind \
+            --hostname $CUSTOM_DOMAIN \
+            --name $CONTAINER_APP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --environment $CONTAINER_APP_ENV \
+            --validation-method CNAME
+        else
+          echo "✅ Custom domain already configured"
+        fi
+    
+    - name: ✅ Deployment Summary
+      run: |
+        echo "### 🎉 Labs Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** Labs" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** main" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**URL:** [labs.hawky.ai](https://$CUSTOM_DOMAIN)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Image:** \`$ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
