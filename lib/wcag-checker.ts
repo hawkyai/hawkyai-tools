@@ -11,6 +11,7 @@ Analyze this advertisement image for WCAG 2.1 accessibility compliance. Your eva
 
 IMPORTANT: Your response must be a valid JSON object WITHOUT any markdown formatting, code blocks, or additional text. Do not wrap your response in \`\`\`json or any other markdown syntax.
 
+
 Respond with ONLY the following JSON structure:
 {
   "compliance_summary": "Brief summary of the ad's accessibility compliance.",
