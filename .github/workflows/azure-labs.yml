@@ -29,6 +29,12 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
+    - name: 🎯 Set Azure Subscription
+      run: |
+        az account set --subscription $SUBSCRIPTION_ID
+        az account show
+        echo "✅ Subscription set to: $SUBSCRIPTION_ID"
+    
     - name: 🐳 Build and push to ACR
       run: |
         az acr build \
