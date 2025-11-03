@@ -164,14 +164,42 @@ jobs:
         elif grep -qi "created\|succeeded" /tmp/role-output.log; then
           echo "✅ Role assignment created successfully"
         else
-          echo "⚠️ Role assignment output:"
-          cat /tmp/role-output.log
-          echo ""
-          echo "Continuing anyway - will verify in next step"
+          echo "⚠️ Uncertain result - will verify in next step"
         fi
         
         echo ""
-        echo "✅ RBAC role assignment step completed"
+        echo "Verifying role assignment exists..."
+        ROLE_COUNT=$(az role assignment list \
+          --assignee $PRINCIPAL_ID \
+          --scope $KV_ID \
+          --query "length([?roleDefinitionName=='Key Vault Secrets User'])" -o tsv)
+        
+        if [ "$ROLE_COUNT" -eq "0" ]; then
+          echo "❌ ERROR: Role assignment was not created!"
+          echo "This is a critical error. Role assignment must exist."
+          echo ""
+          echo "Attempting to create again..."
+          az role assignment create \
+            --role "Key Vault Secrets User" \
+            --assignee-object-id $PRINCIPAL_ID \
+            --assignee-principal-type ServicePrincipal \
+            --scope $KV_ID
+          
+          # Verify again
+          ROLE_COUNT=$(az role assignment list \
+            --assignee $PRINCIPAL_ID \
+            --scope $KV_ID \
+            --query "length([?roleDefinitionName=='Key Vault Secrets User'])" -o tsv)
+          
+          if [ "$ROLE_COUNT" -eq "0" ]; then
+            echo "❌ CRITICAL: Still no role assignment!"
+            exit 1
+          fi
+        fi
+        
+        echo "✅ Verified: $ROLE_COUNT role assignment(s) found"
+        echo ""
+        echo "✅ RBAC role assignment step completed successfully"
     
     - name: ⏳ Wait for RBAC Permission Propagation
       run: |
