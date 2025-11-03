@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 const ZOHO_CLIENT_ID = process.env.ZOHO_CLIENT_ID
 const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET
 
-// Function to handle OAuth callback and token exchange.
+// Function to handle OAuth callback and token exchange..
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
