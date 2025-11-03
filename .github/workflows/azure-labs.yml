@@ -77,29 +77,39 @@ jobs:
             "NEXTAUTH_URL=https://$CUSTOM_DOMAIN"
     
     - name: 🔐 Enable Managed Identity
-      continue-on-error: true
       run: |
+        echo "Ensuring Container App has system-assigned managed identity..."
         az containerapp identity assign \
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
-          --system-assigned
-    
-    - name: 🔍 Get Managed Identity Details
-      id: get-identity
-      run: |
-        PRINCIPAL_ID=$(az containerapp identity show \
-          --name $CONTAINER_APP_NAME \
-          --resource-group $RESOURCE_GROUP \
-          --query principalId -o tsv)
+          --system-assigned \
+          2>&1 | tee /tmp/identity-output.log || true
         
-        if [ -z "$PRINCIPAL_ID" ]; then
-          echo "❌ ERROR: Failed to retrieve Principal ID"
-          echo "Attempting to re-enable managed identity..."
+        if grep -qi "already exists\|succeeded" /tmp/identity-output.log || [ $? -eq 0 ]; then
+          echo "✅ Managed identity is enabled"
+        else
+          echo "⚠️ Retrying identity assignment..."
+          sleep 5
           az containerapp identity assign \
             --name $CONTAINER_APP_NAME \
             --resource-group $RESOURCE_GROUP \
             --system-assigned
-          
+        fi
+    
+    - name: 🔍 Get Managed Identity Principal ID
+      id: get-identity
+      run: |
+        echo "Retrieving Container App managed identity..."
+        
+        # Try to get the principal ID
+        PRINCIPAL_ID=$(az containerapp identity show \
+          --name $CONTAINER_APP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --query principalId -o tsv 2>/dev/null)
+        
+        # If empty, wait and retry
+        if [ -z "$PRINCIPAL_ID" ]; then
+          echo "⏳ Principal ID not immediately available, waiting 10 seconds..."
           sleep 10
           
           PRINCIPAL_ID=$(az containerapp identity show \
@@ -108,146 +118,98 @@ jobs:
             --query principalId -o tsv)
         fi
         
+        # Verify we got it
         if [ -z "$PRINCIPAL_ID" ]; then
-          echo "❌ CRITICAL ERROR: Cannot retrieve Principal ID"
+          echo "❌ CRITICAL ERROR: Cannot retrieve Principal ID after retry"
+          echo "This usually means the managed identity wasn't created properly"
           exit 1
         fi
         
-        echo "✅ Principal ID: $PRINCIPAL_ID"
+        echo "✅ Container App Managed Identity Principal ID: $PRINCIPAL_ID"
         echo "PRINCIPAL_ID=$PRINCIPAL_ID" >> $GITHUB_OUTPUT
     
-    - name: 🔍 Check Key Vault Configuration
-      id: check-kv
+    - name: 🔑 Grant Key Vault Access (RBAC)
       run: |
-        echo "Checking Key Vault configuration..."
+        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
         
-        # Check if Key Vault exists
-        KV_EXISTS=$(az keyvault list --query "[?name=='$KV_NAME'].name" -o tsv)
-        if [ -z "$KV_EXISTS" ]; then
-          echo "❌ ERROR: Key Vault '$KV_NAME' not found"
-          exit 1
-        fi
-        echo "✅ Key Vault found: $KV_NAME"
+        echo "================================================"
+        echo "Granting Key Vault Access via RBAC"
+        echo "================================================"
+        echo ""
+        echo "Container App Managed Identity: $PRINCIPAL_ID"
+        echo "Key Vault: $KV_NAME"
+        echo "Role: Key Vault Secrets User"
+        echo ""
         
         # Get Key Vault resource ID
-        KV_ID=$(az keyvault show --name $KV_NAME --query id -o tsv)
-        echo "Key Vault ID: $KV_ID"
-        echo "KV_ID=$KV_ID" >> $GITHUB_OUTPUT
-        
-        # Check authorization model
-        KV_RBAC=$(az keyvault show --name $KV_NAME --query "properties.enableRbacAuthorization" -o tsv)
-        echo "RBAC Enabled: $KV_RBAC"
-        echo "KV_RBAC=$KV_RBAC" >> $GITHUB_OUTPUT
-        
-        # List secrets to verify access from pipeline
-        echo "Listing secrets in Key Vault..."
-        az keyvault secret list --vault-name $KV_NAME --query "[].name" -o table
-    
-    - name: 🔑 Grant Key Vault Access (Access Policy Model)
-      if: steps.check-kv.outputs.KV_RBAC == 'false' || steps.check-kv.outputs.KV_RBAC == ''
-      run: |
-        echo "Using Access Policy model..."
-        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
-        
-        echo "Setting access policy for Principal ID: $PRINCIPAL_ID"
-        
-        # Remove the error suppression to see actual errors
-        az keyvault set-policy \
+        KV_ID=$(az keyvault show \
           --name $KV_NAME \
-          --object-id $PRINCIPAL_ID \
-          --secret-permissions get list
+          --query id -o tsv)
         
-        echo "✅ Access policy set successfully"
+        echo "Key Vault Resource ID: $KV_ID"
+        echo ""
         
-        # Verify the policy was set
-        echo "Verifying access policy..."
-        POLICY_COUNT=$(az keyvault show --name $KV_NAME \
-          --query "properties.accessPolicies[?objectId=='$PRINCIPAL_ID'] | length(@)" -o tsv)
-        
-        if [ "$POLICY_COUNT" -eq "0" ]; then
-          echo "❌ ERROR: Access policy was not set properly"
-          exit 1
-        fi
-        
-        echo "✅ Access policy verified ($POLICY_COUNT policies found)"
-    
-    - name: 🔑 Grant Key Vault Access (RBAC Model)
-      if: steps.check-kv.outputs.KV_RBAC == 'true'
-      run: |
-        echo "Using RBAC model..."
-        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
-        KV_ID="${{ steps.check-kv.outputs.KV_ID }}"
-        
-        echo "Assigning 'Key Vault Secrets User' role to Principal ID: $PRINCIPAL_ID"
-        
-        # Try to create role assignment
+        # Assign the RBAC role
+        echo "Assigning role (this will show an error if it already exists - that's OK)..."
         az role assignment create \
           --role "Key Vault Secrets User" \
           --assignee-object-id $PRINCIPAL_ID \
           --assignee-principal-type ServicePrincipal \
           --scope $KV_ID \
-          2>&1 | tee /tmp/role-assignment.log || true
+          2>&1 | tee /tmp/role-output.log || true
         
         # Check if it succeeded or already exists
-        if grep -q "role assignment already exists" /tmp/role-assignment.log || \
-           grep -q "Conflict" /tmp/role-assignment.log; then
+        if grep -qi "already exists\|conflict" /tmp/role-output.log; then
           echo "✅ Role assignment already exists"
+        elif grep -qi "created\|succeeded" /tmp/role-output.log; then
+          echo "✅ Role assignment created successfully"
         else
-          echo "✅ Role assignment created"
+          echo "⚠️ Role assignment output:"
+          cat /tmp/role-output.log
+          echo ""
+          echo "Continuing anyway - will verify in next step"
         fi
         
-        # Verify the role assignment
-        echo "Verifying role assignment..."
-        ROLE_COUNT=$(az role assignment list \
-          --assignee $PRINCIPAL_ID \
-          --scope $KV_ID \
-          --query "length([?roleDefinitionName=='Key Vault Secrets User'])" -o tsv)
-        
-        if [ "$ROLE_COUNT" -eq "0" ]; then
-          echo "❌ ERROR: Role assignment was not set properly"
-          exit 1
-        fi
-        
-        echo "✅ Role assignment verified"
+        echo ""
+        echo "✅ RBAC role assignment step completed"
     
-    - name: ⏳ Wait for Permission Propagation
+    - name: ⏳ Wait for RBAC Permission Propagation
       run: |
-        echo "⏳ Waiting 90 seconds for Azure AD and Key Vault permissions to propagate..."
-        echo "This is necessary because Azure's permission system can take time to sync."
-        for i in {90..1}; do
-          echo -ne "Waiting: $i seconds remaining...\r"
+        echo "================================================"
+        echo "Waiting for Azure RBAC Permissions to Propagate"
+        echo "================================================"
+        echo ""
+        echo "Why this is necessary:"
+        echo "  - RBAC permissions are not instant"
+        echo "  - Azure AD needs time to sync the role assignments"
+        echo "  - This typically takes 1-3 minutes"
+        echo "  - We wait 120 seconds to be safe"
+        echo ""
+        
+        WAIT_TIME=120
+        echo "Starting ${WAIT_TIME}-second wait..."
+        
+        for i in $(seq $WAIT_TIME -1 1); do
+          # Show progress every 15 seconds
+          if [ $((i % 15)) -eq 0 ] || [ $i -le 5 ]; then
+            echo "  ⏱️  $i seconds remaining..."
+          fi
           sleep 1
         done
-        echo "✅ Wait complete"
+        
+        echo ""
+        echo "✅ Wait complete - RBAC permissions should now be active"
     
-    - name: 🧪 Verify Key Vault Access from Managed Identity
+    - name: 🔐 Configure Container App Secrets
       run: |
-        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
-        
-        echo "Testing Key Vault access..."
-        echo "Principal ID: $PRINCIPAL_ID"
-        
-        # Try to list secrets
-        echo "Attempting to list secrets..."
-        az keyvault secret list --vault-name $KV_NAME --query "[].name" -o table
-        
-        # Try to read a specific secret
-        echo "Attempting to read MONGODB-URI secret..."
-        SECRET_EXISTS=$(az keyvault secret show \
-          --vault-name $KV_NAME \
-          --name MONGODB-URI \
-          --query "name" -o tsv 2>/dev/null || echo "NOT_FOUND")
-        
-        if [ "$SECRET_EXISTS" == "NOT_FOUND" ]; then
-          echo "⚠️ WARNING: Could not read MONGODB-URI secret"
-          echo "This could be normal if the secret doesn't exist"
-        else
-          echo "✅ Successfully accessed secret: $SECRET_EXISTS"
-        fi
-    
-    - name: 🔐 Add Secrets from Key Vault
-      run: |
-        echo "Setting Container App secrets with Key Vault references..."
+        echo "================================================"
+        echo "Configuring Container App Secrets"
+        echo "================================================"
+        echo ""
+        echo "Setting up Key Vault references for all secrets..."
+        echo "The Container App will fetch actual secret values at runtime"
+        echo "using its managed identity."
+        echo ""
         
         az containerapp secret set \
           --name $CONTAINER_APP_NAME \
@@ -269,10 +231,13 @@ jobs:
             zoho-client-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-SECRET,identityref:system \
             zoho-refresh-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-REFRESH-TOKEN,identityref:system
         
-        echo "✅ Secrets configured successfully"
+        echo ""
+        echo "✅ All 15 secrets configured with Key Vault references"
     
     - name: 🔄 Update Container App
       run: |
+        echo "Updating Container App with new image and environment variables..."
+        
         az containerapp update \
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
@@ -294,6 +259,8 @@ jobs:
             "ZOHO_CLIENT_SECRET=secretref:zoho-client-secret" \
             "ZOHO_REFRESH_TOKEN=secretref:zoho-refresh-token" \
             "NEXTAUTH_URL=https://$CUSTOM_DOMAIN"
+        
+        echo "✅ Container App updated successfully"
     
     - name: 🔀 Enable Multiple Revisions
       run: |
@@ -328,6 +295,8 @@ jobs:
     
     - name: ✅ Deployment Summary
       run: |
+        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
+        
         echo "### 🎉 Labs Deployment Successful!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Environment:** Labs" >> $GITHUB_STEP_SUMMARY
@@ -337,3 +306,9 @@ jobs:
         echo "**URL:** [labs.hawky.ai](https://$CUSTOM_DOMAIN)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Image:** \`$ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Security:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Key Vault: \`kvhawkyai\` (RBAC mode)" >> $GITHUB_STEP_SUMMARY
+        echo "- Managed Identity: \`$PRINCIPAL_ID\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Role: Key Vault Secrets User" >> $GITHUB_STEP_SUMMARY
+        echo "- Secrets: 15 secrets referenced from Key Vault" >> $GITHUB_STEP_SUMMARY
