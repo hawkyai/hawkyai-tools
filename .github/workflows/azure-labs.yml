@@ -91,12 +91,17 @@ jobs:
           --resource-group $RESOURCE_GROUP \
           --query principalId -o tsv)
         
-        az role assignment create \
-          --role "Key Vault Secrets User" \
-          --assignee-object-id $PRINCIPAL_ID \
-          --assignee-principal-type ServicePrincipal \
-          --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/mongodb-prod-rg/providers/Microsoft.KeyVault/vaults/$KV_NAME \
-          2>/dev/null || echo "✅ Role assignment already exists"
+        echo "🔍 Principal ID: $PRINCIPAL_ID"
+        
+        # Grant access to Key Vault using access policies
+        az keyvault set-policy \
+          --name $KV_NAME \
+          --object-id $PRINCIPAL_ID \
+          --secret-permissions get list \
+          || echo "✅ Key Vault policy already exists"
+        
+        echo "⏳ Waiting 30 seconds for permissions to propagate..."
+        sleep 30
     
     - name: 🔐 Add Secrets from Key Vault
       run: |
