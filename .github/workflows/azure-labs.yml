@@ -84,27 +84,171 @@ jobs:
           --resource-group $RESOURCE_GROUP \
           --system-assigned
     
-    - name: 🔑 Grant Key Vault Access
+    - name: 🔍 Get Managed Identity Details
+      id: get-identity
       run: |
         PRINCIPAL_ID=$(az containerapp identity show \
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
           --query principalId -o tsv)
         
-        echo "🔍 Principal ID: $PRINCIPAL_ID"
+        if [ -z "$PRINCIPAL_ID" ]; then
+          echo "❌ ERROR: Failed to retrieve Principal ID"
+          echo "Attempting to re-enable managed identity..."
+          az containerapp identity assign \
+            --name $CONTAINER_APP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --system-assigned
+          
+          sleep 10
+          
+          PRINCIPAL_ID=$(az containerapp identity show \
+            --name $CONTAINER_APP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --query principalId -o tsv)
+        fi
         
-        # Grant access to Key Vault using access policies
+        if [ -z "$PRINCIPAL_ID" ]; then
+          echo "❌ CRITICAL ERROR: Cannot retrieve Principal ID"
+          exit 1
+        fi
+        
+        echo "✅ Principal ID: $PRINCIPAL_ID"
+        echo "PRINCIPAL_ID=$PRINCIPAL_ID" >> $GITHUB_OUTPUT
+    
+    - name: 🔍 Check Key Vault Configuration
+      id: check-kv
+      run: |
+        echo "Checking Key Vault configuration..."
+        
+        # Check if Key Vault exists
+        KV_EXISTS=$(az keyvault list --query "[?name=='$KV_NAME'].name" -o tsv)
+        if [ -z "$KV_EXISTS" ]; then
+          echo "❌ ERROR: Key Vault '$KV_NAME' not found"
+          exit 1
+        fi
+        echo "✅ Key Vault found: $KV_NAME"
+        
+        # Get Key Vault resource ID
+        KV_ID=$(az keyvault show --name $KV_NAME --query id -o tsv)
+        echo "Key Vault ID: $KV_ID"
+        echo "KV_ID=$KV_ID" >> $GITHUB_OUTPUT
+        
+        # Check authorization model
+        KV_RBAC=$(az keyvault show --name $KV_NAME --query "properties.enableRbacAuthorization" -o tsv)
+        echo "RBAC Enabled: $KV_RBAC"
+        echo "KV_RBAC=$KV_RBAC" >> $GITHUB_OUTPUT
+        
+        # List secrets to verify access from pipeline
+        echo "Listing secrets in Key Vault..."
+        az keyvault secret list --vault-name $KV_NAME --query "[].name" -o table
+    
+    - name: 🔑 Grant Key Vault Access (Access Policy Model)
+      if: steps.check-kv.outputs.KV_RBAC == 'false' || steps.check-kv.outputs.KV_RBAC == ''
+      run: |
+        echo "Using Access Policy model..."
+        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
+        
+        echo "Setting access policy for Principal ID: $PRINCIPAL_ID"
+        
+        # Remove the error suppression to see actual errors
         az keyvault set-policy \
           --name $KV_NAME \
           --object-id $PRINCIPAL_ID \
-          --secret-permissions get list \
-          || echo "✅ Key Vault policy already exists"
+          --secret-permissions get list
         
-        echo "⏳ Waiting 30 seconds for permissions to propagate..."
-        sleep 30
+        echo "✅ Access policy set successfully"
+        
+        # Verify the policy was set
+        echo "Verifying access policy..."
+        POLICY_COUNT=$(az keyvault show --name $KV_NAME \
+          --query "properties.accessPolicies[?objectId=='$PRINCIPAL_ID'] | length(@)" -o tsv)
+        
+        if [ "$POLICY_COUNT" -eq "0" ]; then
+          echo "❌ ERROR: Access policy was not set properly"
+          exit 1
+        fi
+        
+        echo "✅ Access policy verified ($POLICY_COUNT policies found)"
+    
+    - name: 🔑 Grant Key Vault Access (RBAC Model)
+      if: steps.check-kv.outputs.KV_RBAC == 'true'
+      run: |
+        echo "Using RBAC model..."
+        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
+        KV_ID="${{ steps.check-kv.outputs.KV_ID }}"
+        
+        echo "Assigning 'Key Vault Secrets User' role to Principal ID: $PRINCIPAL_ID"
+        
+        # Try to create role assignment
+        az role assignment create \
+          --role "Key Vault Secrets User" \
+          --assignee-object-id $PRINCIPAL_ID \
+          --assignee-principal-type ServicePrincipal \
+          --scope $KV_ID \
+          2>&1 | tee /tmp/role-assignment.log || true
+        
+        # Check if it succeeded or already exists
+        if grep -q "role assignment already exists" /tmp/role-assignment.log || \
+           grep -q "Conflict" /tmp/role-assignment.log; then
+          echo "✅ Role assignment already exists"
+        else
+          echo "✅ Role assignment created"
+        fi
+        
+        # Verify the role assignment
+        echo "Verifying role assignment..."
+        ROLE_COUNT=$(az role assignment list \
+          --assignee $PRINCIPAL_ID \
+          --scope $KV_ID \
+          --query "length([?roleDefinitionName=='Key Vault Secrets User'])" -o tsv)
+        
+        if [ "$ROLE_COUNT" -eq "0" ]; then
+          echo "❌ ERROR: Role assignment was not set properly"
+          exit 1
+        fi
+        
+        echo "✅ Role assignment verified"
+    
+    - name: ⏳ Wait for Permission Propagation
+      run: |
+        echo "⏳ Waiting 90 seconds for Azure AD and Key Vault permissions to propagate..."
+        echo "This is necessary because Azure's permission system can take time to sync."
+        for i in {90..1}; do
+          echo -ne "Waiting: $i seconds remaining...\r"
+          sleep 1
+        done
+        echo "✅ Wait complete"
+    
+    - name: 🧪 Verify Key Vault Access from Managed Identity
+      run: |
+        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
+        
+        echo "Testing Key Vault access..."
+        echo "Principal ID: $PRINCIPAL_ID"
+        
+        # Try to list secrets
+        echo "Attempting to list secrets..."
+        az keyvault secret list --vault-name $KV_NAME --query "[].name" -o table
+        
+        # Try to read a specific secret
+        echo "Attempting to read MONGODB-URI secret..."
+        SECRET_EXISTS=$(az keyvault secret show \
+          --vault-name $KV_NAME \
+          --name MONGODB-URI \
+          --query "name" -o tsv 2>/dev/null || echo "NOT_FOUND")
+        
+        if [ "$SECRET_EXISTS" == "NOT_FOUND" ]; then
+          echo "⚠️ WARNING: Could not read MONGODB-URI secret"
+          echo "This could be normal if the secret doesn't exist"
+        else
+          echo "✅ Successfully accessed secret: $SECRET_EXISTS"
+        fi
     
     - name: 🔐 Add Secrets from Key Vault
       run: |
+        echo "Setting Container App secrets with Key Vault references..."
+        
         az containerapp secret set \
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
@@ -124,6 +268,8 @@ jobs:
             zoho-client-id=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-ID,identityref:system \
             zoho-client-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-SECRET,identityref:system \
             zoho-refresh-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-REFRESH-TOKEN,identityref:system
+        
+        echo "✅ Secrets configured successfully"
     
     - name: 🔄 Update Container App
       run: |
