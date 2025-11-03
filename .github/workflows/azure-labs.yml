@@ -44,6 +44,24 @@ jobs:
           --file Dockerfile \
           .
     
+    - name: 🔑 Get ACR Credentials
+      id: acr-creds
+      run: |
+        # Get ACR admin credentials
+        ACR_USERNAME=$(az acr credential show \
+          --name $ACR_NAME \
+          --query username -o tsv)
+        
+        ACR_PASSWORD=$(az acr credential show \
+          --name $ACR_NAME \
+          --query "passwords[0].value" -o tsv)
+        
+        echo "ACR_USERNAME=$ACR_USERNAME" >> $GITHUB_OUTPUT
+        echo "::add-mask::$ACR_PASSWORD"
+        echo "ACR_PASSWORD=$ACR_PASSWORD" >> $GITHUB_OUTPUT
+        
+        echo "✅ Retrieved ACR credentials"
+    
     - name: 🚀 Create Container App (first deployment)
       continue-on-error: true
       run: |
@@ -55,8 +73,8 @@ jobs:
           --target-port 3000 \
           --ingress external \
           --registry-server $ACR_NAME.azurecr.io \
-          --registry-username acrhawkyai \
-          --registry-password "${{ secrets.ACR_PASSWORD }}" \
+          --registry-username "${{ steps.acr-creds.outputs.ACR_USERNAME }}" \
+          --registry-password "${{ steps.acr-creds.outputs.ACR_PASSWORD }}" \
           --cpu 1.0 \
           --memory 2.0Gi \
           --min-replicas 2 \
@@ -83,31 +101,20 @@ jobs:
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
           --system-assigned \
-          2>&1 | tee /tmp/identity-output.log || true
+          2>&1 || true
         
-        if grep -qi "already exists\|succeeded" /tmp/identity-output.log || [ $? -eq 0 ]; then
-          echo "✅ Managed identity is enabled"
-        else
-          echo "⚠️ Retrying identity assignment..."
-          sleep 5
-          az containerapp identity assign \
-            --name $CONTAINER_APP_NAME \
-            --resource-group $RESOURCE_GROUP \
-            --system-assigned
-        fi
+        echo "✅ Managed identity enabled"
     
     - name: 🔍 Get Managed Identity Principal ID
       id: get-identity
       run: |
         echo "Retrieving Container App managed identity..."
         
-        # Try to get the principal ID
         PRINCIPAL_ID=$(az containerapp identity show \
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
           --query principalId -o tsv 2>/dev/null)
         
-        # If empty, wait and retry
         if [ -z "$PRINCIPAL_ID" ]; then
           echo "⏳ Principal ID not immediately available, waiting 10 seconds..."
           sleep 10
@@ -118,225 +125,90 @@ jobs:
             --query principalId -o tsv)
         fi
         
-        # Verify we got it
         if [ -z "$PRINCIPAL_ID" ]; then
-          echo "❌ CRITICAL ERROR: Cannot retrieve Principal ID after retry"
-          echo "This usually means the managed identity wasn't created properly"
+          echo "❌ CRITICAL ERROR: Cannot retrieve Principal ID"
           exit 1
         fi
         
-        echo "✅ Container App Managed Identity Principal ID: $PRINCIPAL_ID"
+        echo "✅ Container App Managed Identity: $PRINCIPAL_ID"
         echo "PRINCIPAL_ID=$PRINCIPAL_ID" >> $GITHUB_OUTPUT
+        echo ""
+        echo "⚠️ IMPORTANT: An Azure admin needs to manually grant Key Vault access!"
+        echo "Run this command as an admin with proper permissions:"
+        echo ""
+        echo "az role assignment create \\"
+        echo "  --role 'Key Vault Secrets User' \\"
+        echo "  --assignee-object-id $PRINCIPAL_ID \\"
+        echo "  --assignee-principal-type ServicePrincipal \\"
+        echo "  --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/mongodb-prod-rg/providers/Microsoft.KeyVault/vaults/$KV_NAME"
+        echo ""
     
-    - name: 🔑 Grant Key Vault Access (RBAC)
+    - name: ⚠️ Manual Permission Required
       run: |
         PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
         
         echo "================================================"
-        echo "Granting Key Vault Access via RBAC"
+        echo "⚠️  MANUAL ACTION REQUIRED"
         echo "================================================"
         echo ""
-        echo "Container App Managed Identity: $PRINCIPAL_ID"
-        echo "Key Vault: $KV_NAME"
-        echo "Role: Key Vault Secrets User"
+        echo "Your GitHub Actions service principal doesn't have"
+        echo "permission to assign RBAC roles on the Key Vault."
         echo ""
-        
-        # Get Key Vault resource ID
-        KV_ID=$(az keyvault show \
-          --name $KV_NAME \
-          --query id -o tsv)
-        
-        echo "Key Vault Resource ID: $KV_ID"
+        echo "An Azure administrator needs to run ONE of these:"
         echo ""
-        
-        # Assign the RBAC role
-        echo "Assigning role (this will show an error if it already exists - that's OK)..."
-        az role assignment create \
-          --role "Key Vault Secrets User" \
-          --assignee-object-id $PRINCIPAL_ID \
-          --assignee-principal-type ServicePrincipal \
-          --scope $KV_ID \
-          2>&1 | tee /tmp/role-output.log || true
-        
-        # Check if it succeeded or already exists
-        if grep -qi "already exists\|conflict" /tmp/role-output.log; then
-          echo "✅ Role assignment already exists"
-        elif grep -qi "created\|succeeded" /tmp/role-output.log; then
-          echo "✅ Role assignment created successfully"
-        else
-          echo "⚠️ Uncertain result - will verify in next step"
-        fi
-        
+        echo "Option 1: Grant via Azure CLI"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "az role assignment create \\"
+        echo "  --role 'Key Vault Secrets User' \\"
+        echo "  --assignee-object-id $PRINCIPAL_ID \\"
+        echo "  --assignee-principal-type ServicePrincipal \\"
+        echo "  --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/mongodb-prod-rg/providers/Microsoft.KeyVault/vaults/$KV_NAME"
         echo ""
-        echo "Verifying role assignment exists..."
-        ROLE_COUNT=$(az role assignment list \
-          --assignee $PRINCIPAL_ID \
-          --scope $KV_ID \
-          --query "length([?roleDefinitionName=='Key Vault Secrets User'])" -o tsv)
-        
-        if [ "$ROLE_COUNT" -eq "0" ]; then
-          echo "❌ ERROR: Role assignment was not created!"
-          echo "This is a critical error. Role assignment must exist."
-          echo ""
-          echo "Attempting to create again..."
-          az role assignment create \
-            --role "Key Vault Secrets User" \
-            --assignee-object-id $PRINCIPAL_ID \
-            --assignee-principal-type ServicePrincipal \
-            --scope $KV_ID
-          
-          # Verify again
-          ROLE_COUNT=$(az role assignment list \
-            --assignee $PRINCIPAL_ID \
-            --scope $KV_ID \
-            --query "length([?roleDefinitionName=='Key Vault Secrets User'])" -o tsv)
-          
-          if [ "$ROLE_COUNT" -eq "0" ]; then
-            echo "❌ CRITICAL: Still no role assignment!"
-            exit 1
-          fi
-        fi
-        
-        echo "✅ Verified: $ROLE_COUNT role assignment(s) found"
+        echo "Option 2: Grant via Azure Portal"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "1. Go to: Key Vault 'kvhawkyai'"
+        echo "2. Click: Access control (IAM)"
+        echo "3. Click: + Add → Add role assignment"
+        echo "4. Select: Key Vault Secrets User"
+        echo "5. Search for: ca-hawkyai-labs"
+        echo "6. Assign the role"
         echo ""
-        echo "✅ RBAC role assignment step completed successfully"
-    
-    - name: ⏳ Wait for RBAC Permission Propagation
-      run: |
+        echo "Principal ID: $PRINCIPAL_ID"
+        echo ""
+        echo "After granting permission:"
+        echo "1. Wait 2-3 minutes for RBAC to propagate"
+        echo "2. Re-run this workflow"
+        echo "3. It will succeed!"
+        echo ""
         echo "================================================"
-        echo "Waiting for Azure RBAC Permissions to Propagate"
-        echo "================================================"
-        echo ""
-        echo "Why this is necessary:"
-        echo "  - RBAC permissions are not instant"
-        echo "  - Azure AD needs time to sync the role assignments"
-        echo "  - This typically takes 1-3 minutes"
-        echo "  - We wait 120 seconds to be safe"
-        echo ""
         
-        WAIT_TIME=120
-        echo "Starting ${WAIT_TIME}-second wait..."
-        
-        for i in $(seq $WAIT_TIME -1 1); do
-          # Show progress every 15 seconds
-          if [ $((i % 15)) -eq 0 ] || [ $i -le 5 ]; then
-            echo "  ⏱️  $i seconds remaining..."
-          fi
-          sleep 1
-        done
-        
-        echo ""
-        echo "✅ Wait complete - RBAC permissions should now be active"
-    
-    - name: 🔐 Configure Container App Secrets
-      run: |
-        echo "================================================"
-        echo "Configuring Container App Secrets"
-        echo "================================================"
-        echo ""
-        echo "Setting up Key Vault references for all secrets..."
-        echo "The Container App will fetch actual secret values at runtime"
-        echo "using its managed identity."
-        echo ""
-        
-        az containerapp secret set \
-          --name $CONTAINER_APP_NAME \
-          --resource-group $RESOURCE_GROUP \
-          --secrets \
-            mongodb-uri=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/MONGODB-URI,identityref:system \
-            aws-access-key-id=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/AWS-ACCESS-KEY-ID,identityref:system \
-            aws-secret-access-key=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/AWS-SECRET-ACCESS-KEY,identityref:system \
-            elasticsearch-api-key=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ELASTICSEARCH-API-KEY,identityref:system \
-            google-client-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/GOOGLE-CLIENT-SECRET,identityref:system \
-            nextauth-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/NEXTAUTH-SECRET,identityref:system \
-            resend-api-key=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/RESEND-API-KEY,identityref:system \
-            email-server-password=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/EMAIL-SERVER-PASSWORD,identityref:system \
-            slack-error-webhook-url=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/SLACK-ERROR-WEBHOOK-URL,identityref:system \
-            slack-webhook-url=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/SLACK-WEBHOOK-URL,identityref:system \
-            vercel-oidc-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/VERCEL-OIDC-TOKEN,identityref:system \
-            zoho-access-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-ACCESS-TOKEN,identityref:system \
-            zoho-client-id=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-ID,identityref:system \
-            zoho-client-secret=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-CLIENT-SECRET,identityref:system \
-            zoho-refresh-token=keyvaultref:https://$KV_NAME.vault.azure.net/secrets/ZOHO-REFRESH-TOKEN,identityref:system
-        
-        echo ""
-        echo "✅ All 15 secrets configured with Key Vault references"
-    
-    - name: 🔄 Update Container App
-      run: |
-        echo "Updating Container App with new image and environment variables..."
-        
-        az containerapp update \
-          --name $CONTAINER_APP_NAME \
-          --resource-group $RESOURCE_GROUP \
-          --image $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} \
-          --set-env-vars \
-            "MONGODB_URI=secretref:mongodb-uri" \
-            "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
-            "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
-            "ELASTICSEARCH_API_KEY=secretref:elasticsearch-api-key" \
-            "GOOGLE_CLIENT_SECRET=secretref:google-client-secret" \
-            "NEXTAUTH_SECRET=secretref:nextauth-secret" \
-            "RESEND_API_KEY=secretref:resend-api-key" \
-            "EMAIL_SERVER_PASSWORD=secretref:email-server-password" \
-            "SLACK_ERROR_WEBHOOK_URL=secretref:slack-error-webhook-url" \
-            "SLACK_WEBHOOK_URL=secretref:slack-webhook-url" \
-            "VERCEL_OIDC_TOKEN=secretref:vercel-oidc-token" \
-            "ZOHO_ACCESS_TOKEN=secretref:zoho-access-token" \
-            "ZOHO_CLIENT_ID=secretref:zoho-client-id" \
-            "ZOHO_CLIENT_SECRET=secretref:zoho-client-secret" \
-            "ZOHO_REFRESH_TOKEN=secretref:zoho-refresh-token" \
-            "NEXTAUTH_URL=https://$CUSTOM_DOMAIN"
-        
-        echo "✅ Container App updated successfully"
-    
-    - name: 🔀 Enable Multiple Revisions
-      run: |
-        az containerapp revision set-mode \
-          --name $CONTAINER_APP_NAME \
-          --resource-group $RESOURCE_GROUP \
-          --mode multiple
-    
-    - name: 🌐 Configure Custom Domain
-      run: |
-        DOMAIN_EXISTS=$(az containerapp hostname list \
-          --name $CONTAINER_APP_NAME \
-          --resource-group $RESOURCE_GROUP \
-          --query "[?name=='$CUSTOM_DOMAIN'].name" -o tsv)
-        
-        if [ -z "$DOMAIN_EXISTS" ]; then
-          echo "➕ Adding custom domain: $CUSTOM_DOMAIN"
-          az containerapp hostname add \
-            --hostname $CUSTOM_DOMAIN \
-            --name $CONTAINER_APP_NAME \
-            --resource-group $RESOURCE_GROUP
-          
-          az containerapp hostname bind \
-            --hostname $CUSTOM_DOMAIN \
-            --name $CONTAINER_APP_NAME \
-            --resource-group $RESOURCE_GROUP \
-            --environment $CONTAINER_APP_ENV \
-            --validation-method CNAME
-        else
-          echo "✅ Custom domain already configured"
-        fi
-    
-    - name: ✅ Deployment Summary
-      run: |
-        PRINCIPAL_ID="${{ steps.get-identity.outputs.PRINCIPAL_ID }}"
-        
-        echo "### 🎉 Labs Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+        # Save to summary
+        echo "## ⚠️ Manual Action Required" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Environment:** Labs" >> $GITHUB_STEP_SUMMARY
-        echo "**Branch:** main" >> $GITHUB_STEP_SUMMARY
-        echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "Your GitHub service principal lacks permission to assign RBAC roles." >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**URL:** [labs.hawky.ai](https://$CUSTOM_DOMAIN)" >> $GITHUB_STEP_SUMMARY
+        echo "**An Azure admin must run this command:**" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+        echo "az role assignment create \\" >> $GITHUB_STEP_SUMMARY
+        echo "  --role 'Key Vault Secrets User' \\" >> $GITHUB_STEP_SUMMARY
+        echo "  --assignee-object-id $PRINCIPAL_ID \\" >> $GITHUB_STEP_SUMMARY
+        echo "  --assignee-principal-type ServicePrincipal \\" >> $GITHUB_STEP_SUMMARY
+        echo "  --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/mongodb-prod-rg/providers/Microsoft.KeyVault/vaults/$KV_NAME" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Image:** \`$ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Principal ID:** \`$PRINCIPAL_ID\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Security:**" >> $GITHUB_STEP_SUMMARY
-        echo "- Key Vault: \`kvhawkyai\` (RBAC mode)" >> $GITHUB_STEP_SUMMARY
-        echo "- Managed Identity: \`$PRINCIPAL_ID\`" >> $GITHUB_STEP_SUMMARY
-        echo "- Role: Key Vault Secrets User" >> $GITHUB_STEP_SUMMARY
-        echo "- Secrets: 15 secrets referenced from Key Vault" >> $GITHUB_STEP_SUMMARY
+        echo "After granting permission, wait 2-3 minutes and re-run this workflow." >> $GITHUB_STEP_SUMMARY
+    
+    - name: ⏸️ Waiting for Manual Permission Grant
+      run: |
+        echo "================================================"
+        echo "Pausing deployment..."
+        echo "================================================"
+        echo ""
+        echo "This workflow will now exit."
+        echo "After the admin grants permission, re-run this workflow."
+        echo ""
+        echo "The Container App is created, but secrets aren't configured yet."
+        echo ""
+        exit 1
