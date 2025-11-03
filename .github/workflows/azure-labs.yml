@@ -56,7 +56,7 @@ jobs:
           --ingress external \
           --registry-server $ACR_NAME.azurecr.io \
           --registry-username acrhawkyai \
-          --registry-password "oun9b74bXuMp2pzA5/Xyr9wMtvMLNiW4rv6ME8h3Qq+ACRBNo9Ru" \
+          --registry-password "${{ secrets.ACR_PASSWORD }}" \
           --cpu 1.0 \
           --memory 2.0Gi \
           --min-replicas 2 \
