@@ -6,70 +6,26 @@ import { z } from "zod"
 // Slack webhook URL - Replace with your actual webhook URL
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL
 
-// Zoho CRM configuration
-const ZOHO_CLIENT_ID = process.env.ZOHO_CLIENT_ID
-const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET
-const ZOHO_DOMAIN = "https://www.zohoapis.in"
+// Attio CRM configuration
+const ATTIO_API_KEY = process.env.ATTIO_API_KEY
+const ATTIO_API_URL = "https://api.attio.com/v2"
 
 // Form validation schema
 const formSchema = z.object({
     name: z.string().min(2),
     email: z.string().email(),
     phone: z.string().optional(),
+    countryCode: z.string().optional(),
     referralSource: z.string().optional(),
 })
 
-// Function to refresh Zoho token
-async function refreshZohoToken() {
-    try {
-        if (!ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
-            throw new Error('Missing required Zoho credentials for token refresh');
-        }
-        
-        const response = await fetch('https://accounts.zoho.in/oauth/v2/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                client_id: ZOHO_CLIENT_ID,
-                client_secret: ZOHO_CLIENT_SECRET,
-                grant_type: 'refresh_token',
-                refresh_token: process.env.ZOHO_REFRESH_TOKEN || ''
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.access_token) {
-            throw new Error(`Token refresh failed: ${JSON.stringify(data)}`);
-        }
-
-        return data.access_token;
-    } catch (error) {
-        console.error('Token refresh failed:', error);
-        return null;
-    }
-}
-
-// Function to initiate OAuth flow
-export async function GET(request: Request) {
-    const authUrl = `https://accounts.zoho.in/oauth/v2/auth?scope=ZohoCRM.modules.ALL&client_id=${ZOHO_CLIENT_ID}&response_type=code&access_type=offline&redirect_uri=http://localhost:3000/api/auth/callback`;
-    
-    return NextResponse.redirect(authUrl, {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-    });
-}
 
 // Function to handle OAuth callback and token exchange
 export async function POST(request: Request) {
     try {
         // Debug environment variables
         console.log('Environment check:')
-        console.log('ZOHO_CLIENT_ID:', process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set')
-        console.log('ZOHO_CLIENT_SECRET:', process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set')
-        console.log('ZOHO_REFRESH_TOKEN:', process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set')
+        console.log('ATTIO_API_KEY:', process.env.ATTIO_API_KEY ? 'Set' : 'Not set')
 
         // Get form data from request
         const formData = await request.json()
@@ -111,12 +67,56 @@ export async function POST(request: Request) {
                 })
             }
         } else {
-            // Handle regular form submission - send to both Zoho and Slack
-            // Create lead in Zoho CRM
-            const zohoResult = await createZohoLead(formData, submissionId)
-            if (!zohoResult.success) {
-                console.error("Zoho CRM error:", zohoResult.error)
-                // Continue to Slack notification even if Zoho fails
+            // Handle regular form submission - send to both Attio and Slack
+            // Extract domain from email and create company in Attio CRM
+            let companyResult = null;
+            if (formData.email) {
+                const domain = extractDomainFromEmail(formData.email);
+                if (domain) {
+                    companyResult = await createAttioCompany(domain, submissionId);
+                    if (!companyResult.success) {
+                        console.error("Attio Company CRM error:", companyResult.error);
+                        // Continue even if company creation fails
+                    }
+                }
+            }
+            
+            // Create person in Attio CRM
+            const attioResult = await createAttioPerson(formData, submissionId)
+            if (!attioResult.success) {
+                console.error("Attio CRM error:", attioResult.error)
+                // Continue to Slack notification even if Attio fails
+            }
+
+            // Create deal in Attio CRM
+            // Create deal if we have both person and company data (even if they already existed)
+            let dealResult = null;
+            if (formData.email) {
+                const domain = extractDomainFromEmail(formData.email);
+                // Check if we have both person and company data (works even if they already existed)
+                const hasPersonData = attioResult.data !== undefined;
+                const hasCompanyData = companyResult?.data !== undefined;
+                
+                if (domain && hasPersonData && hasCompanyData && companyResult) {
+                    dealResult = await createAttioDeal(
+                        domain,
+                        formData.name,
+                        attioResult.data,
+                        companyResult.data,
+                        submissionId
+                    );
+                    if (!dealResult.success) {
+                        console.error("Attio Deal CRM error:", dealResult.error);
+                        // Continue even if deal creation fails
+                    }
+                } else {
+                    if (!hasPersonData) {
+                        console.warn('Cannot create deal: Missing person data');
+                    }
+                    if (!hasCompanyData) {
+                        console.warn('Cannot create deal: Missing company data');
+                    }
+                }
             }
 
             // Send Slack notification
@@ -125,12 +125,16 @@ export async function POST(request: Request) {
                 console.error("Slack notification error:", slackResult.error)
             }
 
-            // Return success if either Zoho or Slack succeeded
-            if (zohoResult.success || slackResult.success) {
+            // Return success if either Attio (person, company, or deal) or Slack succeeded
+            if (attioResult.success || companyResult?.success || dealResult?.success || slackResult.success) {
                 return NextResponse.json({ 
                     success: true, 
-                    data: zohoResult.data,
-                    zohoSuccess: zohoResult.success,
+                    data: attioResult.data,
+                    companyData: companyResult?.data,
+                    dealData: dealResult?.data,
+                    attioSuccess: attioResult.success,
+                    companySuccess: companyResult?.success || false,
+                    dealSuccess: dealResult?.success || false,
                     slackSuccess: slackResult.success
                 }, {
                     headers: {
@@ -142,8 +146,10 @@ export async function POST(request: Request) {
             } else {
                 return NextResponse.json({ 
                     success: false, 
-                    error: "Both Zoho CRM and Slack notifications failed",
-                    zohoError: zohoResult.error,
+                    error: "Both Attio CRM and Slack notifications failed",
+                    attioError: attioResult.error,
+                    companyError: companyResult?.error,
+                    dealError: dealResult?.error,
                     slackError: slackResult.error
                 }, { 
                     status: 500,
@@ -185,63 +191,355 @@ export async function OPTIONS() {
     });
 }
 
-// Function to create a lead in Zoho CRM
-async function createZohoLead(formData: any, submissionId: string) {
-    try {
-        const accessToken = await refreshZohoToken();
-        if (!accessToken) {
-            throw new Error('Authentication failed: No valid token available. Please check your Zoho credentials.');
-        }
-        console.log('Using access token for API call:', accessToken ? 'Present' : 'Missing');
-        
-        // Prepare lead data according to v8 API structure
-        const leadData = {
-            data: [
-                {
-                    id: '1',
-                    Company: formData.company || '',
-                    Last_Name: formData.name || '',
-                    First_Name: formData.firstName || '',
-                    Phone: formData.phone || '',
-                    Email: formData.email || '',
-                    Lead_Source: 'Website / Get Demo'
-                }
-            ],
-            trigger: [
-                'workflow'
-            ]
-        };
+// Function to extract domain from email
+function extractDomainFromEmail(email: string): string | null {
+    if (!email || !email.includes('@')) {
+        return null;
+    }
+    const parts = email.split('@');
+    if (parts.length === 2) {
+        return parts[1].toLowerCase();
+    }
+    return null;
+}
 
-        console.log('Sending data to Zoho CRM:', JSON.stringify(leadData, null, 2));
-        const ZOHO_API_VERSION = "v8"
-        const ZOHO_MODULE = "Leads"
-        
-        // Use the new v8 API endpoint with all required headers
-        const response = await fetch(`${ZOHO_DOMAIN}/crm/${ZOHO_API_VERSION}/${ZOHO_MODULE}`, {
-            method: 'POST',
+// Function to fetch existing company by domain
+async function fetchCompanyByDomain(domain: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        if (!ATTIO_API_KEY) {
+            return { success: false, error: 'No API key available' };
+        }
+
+        // Search for company by domain using Attio API
+        const response = await fetch(`${ATTIO_API_URL}/objects/companies/records?filter=domains.eq.${encodeURIComponent(domain)}`, {
+            method: 'GET',
             headers: {
-                'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-API-Version': ZOHO_API_VERSION,
-                'X-API-Module': ZOHO_MODULE,
-                'X-API-Scope': 'ZohoCRM.modules.ALL'
-            },
-            body: JSON.stringify(leadData)
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Accept': 'application/json'
+            }
         });
 
         const result = await response.json();
-        console.log('Zoho API response status:', response.status);
-        console.log('Zoho API response:', JSON.stringify(result, null, 2));
         
         if (!response.ok) {
-            throw new Error(`Zoho API error: ${response.status} - ${JSON.stringify(result)}`);
+            return { success: false, error: `Failed to fetch company: ${response.status}` };
         }
 
-        console.log('Zoho CRM lead created successfully:', result);
+        // Check if we found a company
+        if (result.data && result.data.length > 0) {
+            return { success: true, data: result.data[0] };
+        }
+
+        return { success: false, error: 'Company not found' };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+// Function to fetch existing person by email
+async function fetchPersonByEmail(email: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        if (!ATTIO_API_KEY) {
+            return { success: false, error: 'No API key available' };
+        }
+
+        // Search for person by email using Attio API
+        const response = await fetch(`${ATTIO_API_URL}/objects/people/records?filter=email_addresses.eq.${encodeURIComponent(email)}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            return { success: false, error: `Failed to fetch person: ${response.status}` };
+        }
+
+        // Check if we found a person
+        if (result.data && result.data.length > 0) {
+            return { success: true, data: result.data[0] };
+        }
+
+        return { success: false, error: 'Person not found' };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+// Function to create a company in Attio CRM
+async function createAttioCompany(domain: string, submissionId: string) {
+    try {
+        if (!ATTIO_API_KEY) {
+            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
+        }
+        
+        // Extract company name from domain (e.g., "hawky.ai" -> "Hawky")
+        const domainParts = domain.split('.');
+        const companyName = domainParts.length > 0 
+            ? domainParts[0].charAt(0).toUpperCase() + domainParts[0].slice(1)
+            : domain;
+        
+        // Prepare company data according to Attio API structure
+        // According to Attio API docs: name is Text, domains is Domain (array)
+        const companyData = {
+            data: {
+                values: {
+                    name: companyName,
+                    domains: [domain],
+                    description: `Company created from form submission. Domain: ${domain}. Submission ID: ${submissionId}`
+                }
+            }
+        };
+
+        console.log('Sending company data to Attio CRM:', JSON.stringify(companyData, null, 2));
+        
+        // Use Attio API v2 endpoint with Bearer authentication
+        const response = await fetch(`${ATTIO_API_URL}/objects/companies/records`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(companyData)
+        });
+
+        const result = await response.json();
+        console.log('Attio Company API response status:', response.status);
+        console.log('Attio Company API response:', JSON.stringify(result, null, 2));
+        
+        if (!response.ok) {
+            // If company already exists (409 conflict), fetch the existing company
+            if (response.status === 409 || response.status === 422) {
+                console.warn('Company may already exist in Attio. Fetching existing company...');
+                const existingCompany = await fetchCompanyByDomain(domain);
+                if (existingCompany.success) {
+                    return { success: true, data: existingCompany.data, alreadyExists: true };
+                } else {
+                    console.warn('Could not fetch existing company, but continuing...');
+                    return { success: true, data: result, alreadyExists: true };
+                }
+            }
+            throw new Error(`Attio Company API error: ${response.status} - ${JSON.stringify(result)}`);
+        }
+
+        console.log('Attio CRM company created successfully:', result);
         return { success: true, data: result };
     } catch (error) {
-        console.error('Error creating Zoho lead:', error);
+        console.error('Error creating Attio company:', error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+// Function to create a deal in Attio CRM
+async function createAttioDeal(
+    domain: string,
+    personName: string,
+    personData: any,
+    companyData: any,
+    submissionId: string
+) {
+    try {
+        if (!ATTIO_API_KEY) {
+            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
+        }
+        
+        // Extract record IDs from person and company responses
+        // Attio returns record IDs in the format: { id: { workspace_id: "...", record_id: "..." } }
+        const personRecordId = personData?.data?.id?.record_id || personData?.id?.record_id;
+        const companyRecordId = companyData?.data?.id?.record_id || companyData?.id?.record_id;
+        
+        if (!personRecordId || !companyRecordId) {
+            throw new Error('Cannot create deal: Missing person or company record ID');
+        }
+        
+        // Prepare deal data according to Attio API structure
+        // According to Attio API docs:
+        // - name: Required Text
+        // - stage: Required Status ("INBOUNDS")
+        // - owner: Required Actor reference (email address)
+        // - associated_people: Record reference (array)
+        // - associated_company: Record reference
+        const dealData = {
+            data: {
+                values: {
+                    name: domain,
+                    stage: "INBOUNDS",
+                    owner: "hawky@hawky.ai",
+                    associated_people: [personRecordId],
+                    associated_company: companyRecordId
+                }
+            }
+        };
+
+        console.log('Sending deal data to Attio CRM:', JSON.stringify(dealData, null, 2));
+        
+        // Use Attio API v2 endpoint with Bearer authentication
+        const response = await fetch(`${ATTIO_API_URL}/objects/deals/records`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(dealData)
+        });
+
+        const result = await response.json();
+        console.log('Attio Deal API response status:', response.status);
+        console.log('Attio Deal API response:', JSON.stringify(result, null, 2));
+        
+        if (!response.ok) {
+            // If deal already exists or similar conflict, log warning but continue
+            if (response.status === 409 || response.status === 422) {
+                console.warn('Deal may already exist in Attio or conflict. Continuing...');
+                return { success: true, data: result, alreadyExists: true };
+            }
+            throw new Error(`Attio Deal API error: ${response.status} - ${JSON.stringify(result)}`);
+        }
+
+        console.log('Attio CRM deal created successfully:', result);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error creating Attio deal:', error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+// Function to create a person in Attio CRM
+async function createAttioPerson(formData: any, submissionId: string) {
+    try {
+        if (!ATTIO_API_KEY) {
+            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
+        }
+        
+        // Prepare person data according to Attio API structure
+        // According to Attio API docs: name is a single "Personal name" field
+        // email_addresses is an array of strings
+        // phone_numbers is an array of strings
+        
+        // Handle phone number - combine countryCode and phone if both provided
+        // Attio validates phone numbers strictly, so we validate format before sending
+        let formattedPhone: string | null = null;
+        if (formData.phone) {
+            let phoneNumber = formData.phone.trim();
+            
+            // If phone already includes country code (starts with +), use it as is
+            if (phoneNumber.startsWith('+')) {
+                formattedPhone = phoneNumber;
+            }
+            // If countryCode is provided separately, combine them
+            else if (formData.countryCode) {
+                const countryCode = formData.countryCode.trim();
+                formattedPhone = `${countryCode}${phoneNumber}`;
+            }
+            // Otherwise, use phone as is (may be missing country code)
+            else {
+                formattedPhone = phoneNumber;
+            }
+            
+            // Validate phone number format before sending to Attio
+            // Attio is strict about phone number validation
+            if (formattedPhone) {
+                const digitsOnly = formattedPhone.replace(/\D/g, '');
+                
+                // If phone starts with +, it should have country code + valid number
+                if (formattedPhone.startsWith('+')) {
+                    // US/Canada (+1) needs exactly 11 digits total (1 for country + 10 for number)
+                    if (digitsOnly.startsWith('1') && digitsOnly.length !== 11) {
+                        console.warn(`Phone number "${formattedPhone}" appears invalid. US/Canada numbers (+1) need exactly 11 digits total. Got ${digitsOnly.length}. Skipping phone number.`);
+                        formattedPhone = null; // Skip invalid phone numbers
+                    }
+                    // Other countries: country code (1-3 digits) + 7-15 digits for the number
+                    else if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+                        console.warn(`Phone number "${formattedPhone}" appears invalid. Expected 8-15 digits total including country code. Got ${digitsOnly.length}. Skipping phone number.`);
+                        formattedPhone = null; // Skip invalid phone numbers
+                    }
+                } else {
+                    // Phone without country code should have at least 7 digits
+                    if (digitsOnly.length < 7) {
+                        console.warn(`Phone number "${formattedPhone}" appears invalid (too short). Skipping phone number.`);
+                        formattedPhone = null; // Skip invalid phone numbers
+                    }
+                }
+            }
+        }
+        
+        const personData = {
+            data: {
+                values: {
+                    email_addresses: formData.email ? [formData.email] : [],
+                    name: formData.name || '',
+                    phone_numbers: formattedPhone ? [formattedPhone] : [],
+                    description: `Submitted via form. Lead Source: ${formData.referralSource || 'Website / Get Demo'}. Submission ID: ${submissionId}`
+                }
+            }
+        };
+
+        console.log('Sending data to Attio CRM:', JSON.stringify(personData, null, 2));
+        
+        // Use Attio API v2 endpoint with Bearer authentication
+        let response = await fetch(`${ATTIO_API_URL}/objects/people/records`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(personData)
+        });
+
+        let result = await response.json();
+        console.log('Attio API response status:', response.status);
+        console.log('Attio API response:', JSON.stringify(result, null, 2));
+        
+        // If phone number validation fails, retry without phone number
+        if (!response.ok && formattedPhone && result.code === 'validation_type' && 
+            result.message && result.message.includes('phone_numbers')) {
+            console.warn('Phone number validation failed. Retrying without phone number...');
+            
+            // Retry without phone number
+            personData.data.values.phone_numbers = [];
+            response = await fetch(`${ATTIO_API_URL}/objects/people/records`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(personData)
+            });
+            
+            result = await response.json();
+            console.log('Attio API retry response status:', response.status);
+            console.log('Attio API retry response:', JSON.stringify(result, null, 2));
+        }
+        
+        if (!response.ok) {
+            // If person already exists (409 conflict), fetch the existing person
+            if (response.status === 409 || response.status === 422) {
+                console.warn('Person may already exist in Attio. Fetching existing person...');
+                if (formData.email) {
+                    const existingPerson = await fetchPersonByEmail(formData.email);
+                    if (existingPerson.success) {
+                        return { success: true, data: existingPerson.data, alreadyExists: true };
+                    } else {
+                        console.warn('Could not fetch existing person, but continuing...');
+                        return { success: true, data: result, alreadyExists: true };
+                    }
+                }
+                return { success: true, data: result, alreadyExists: true };
+            }
+            throw new Error(`Attio API error: ${response.status} - ${JSON.stringify(result)}`);
+        }
+
+        console.log('Attio CRM person created successfully:', result);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error creating Attio person:', error);
         return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
