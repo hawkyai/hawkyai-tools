@@ -414,7 +414,8 @@ async function createAttioPerson(formData: any, submissionId: string) {
     try {
         if (!ATTIO_API_KEY) {
             throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
-        }
+        }   
+        
         
         // Prepare person data according to Attio API structure
         // According to Attio API docs: name is a single "Personal name" field
