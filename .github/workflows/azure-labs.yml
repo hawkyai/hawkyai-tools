@@ -60,138 +60,18 @@ jobs:
         
         echo "✅ Retrieved ACR credentials"
     
-    - name: 🚀 Create/Update Container App
+    - name: 🚀 Update Container App
       run: |
-        # Check if Container App exists
-        APP_EXISTS=$(az containerapp show \
+        echo "Updating Container App with new image..."
+        echo "NOTE: This assumes secrets are already configured in Azure Portal"
+        echo ""
+        
+        az containerapp update \
           --name $CONTAINER_APP_NAME \
           --resource-group $RESOURCE_GROUP \
-          --query name -o tsv 2>/dev/null || echo "")
+          --image $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}
         
-        if [ -z "$APP_EXISTS" ]; then
-          echo "Creating new Container App..."
-          az containerapp create \
-            --name $CONTAINER_APP_NAME \
-            --resource-group $RESOURCE_GROUP \
-            --environment $CONTAINER_APP_ENV \
-            --image $ACR_NAME.azurecr.io/$IMAGE_NAME:latest \
-            --target-port 3000 \
-            --ingress external \
-            --registry-server $ACR_NAME.azurecr.io \
-            --registry-username "${{ steps.acr-creds.outputs.ACR_USERNAME }}" \
-            --registry-password "${{ steps.acr-creds.outputs.ACR_PASSWORD }}" \
-            --cpu 1.0 \
-            --memory 2.0Gi \
-            --min-replicas 2 \
-            --max-replicas 5 \
-            --secrets \
-              mongodb-uri="${{ secrets.MONGODB_URI }}" \
-              aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-              aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-              elasticsearch-api-key="${{ secrets.ELASTICSEARCH_API_KEY }}" \
-              google-client-secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-              nextauth-secret="${{ secrets.NEXTAUTH_SECRET }}" \
-              resend-api-key="${{ secrets.RESEND_API_KEY }}" \
-              email-server-password="${{ secrets.EMAIL_SERVER_PASSWORD }}" \
-              slack-error-webhook-url="${{ secrets.SLACK_ERROR_WEBHOOK_URL }}" \
-              slack-webhook-url="${{ secrets.SLACK_WEBHOOK_URL }}" \
-              vercel-oidc-token="${{ secrets.VERCEL_OIDC_TOKEN }}" \
-              zoho-access-token="${{ secrets.ZOHO_ACCESS_TOKEN }}" \
-              zoho-client-id="${{ secrets.ZOHO_CLIENT_ID }}" \
-              zoho-client-secret="${{ secrets.ZOHO_CLIENT_SECRET }}" \
-              zoho-refresh-token="${{ secrets.ZOHO_REFRESH_TOKEN }}" \
-            --env-vars \
-              "NODE_ENV=production" \
-              "MONGODB_URI=secretref:mongodb-uri" \
-              "MONGODB_DB=hawkyai" \
-              "AWS_REGION=ap-south-1" \
-              "AWS_S3_BUCKET=hawky-ai-static-tryout" \
-              "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
-              "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
-              "ELASTICSEARCH_CLOUD_ID=h-staging-ES:Y2VudHJhbGluZGlhLmF6dXJlLmVsYXN0aWMtY2xvdWQuY29tOjkyNDMkYjA5NWRmNDQ1OWQxNGUwMWI3MjMwMDU3ZjkwNTNhZTYkMmYzNjJkZTkyNWRjNDAzMGJiODU5NzFmNGFkZDA0ODQ=" \
-              "ELASTICSEARCH_IMAGE_INDEX=image_competitors_analysis" \
-              "ELASTICSEARCH_VIDEO_INDEX=video_competitors_analysis" \
-              "ELASTICSEARCH_API_KEY=secretref:elasticsearch-api-key" \
-              "EMAIL_FROM=hawky.ai@gmail.com" \
-              "EMAIL_SERVER_HOST=smtp.example.com" \
-              "EMAIL_SERVER_PORT=587" \
-              "EMAIL_SERVER_USER=hawky.ai@gmail.com" \
-              "EMAIL_SERVER_PASSWORD=secretref:email-server-password" \
-              "GOOGLE_CLIENT_ID=896125824463-ru2dhbl8mtscj928kagc8346cl681k0b.apps.googleusercontent.com" \
-              "GOOGLE_CLIENT_SECRET=secretref:google-client-secret" \
-              "NEXTAUTH_URL=https://$CUSTOM_DOMAIN" \
-              "NEXTAUTH_SECRET=secretref:nextauth-secret" \
-              "RESEND_API_KEY=secretref:resend-api-key" \
-              "SLACK_ERROR_WEBHOOK_URL=secretref:slack-error-webhook-url" \
-              "SLACK_WEBHOOK_URL=secretref:slack-webhook-url" \
-              "VERCEL_OIDC_TOKEN=secretref:vercel-oidc-token" \
-              "ZOHO_ACCESS_TOKEN=secretref:zoho-access-token" \
-              "ZOHO_CLIENT_ID=secretref:zoho-client-id" \
-              "ZOHO_CLIENT_SECRET=secretref:zoho-client-secret" \
-              "ZOHO_REFRESH_TOKEN=secretref:zoho-refresh-token"
-          
-          echo "✅ Container App created"
-        else
-          echo "Container App exists, updating..."
-          
-          # Update secrets
-          az containerapp secret set \
-            --name $CONTAINER_APP_NAME \
-            --resource-group $RESOURCE_GROUP \
-            --secrets \
-              mongodb-uri="${{ secrets.MONGODB_URI }}" \
-              aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-              aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-              elasticsearch-api-key="${{ secrets.ELASTICSEARCH_API_KEY }}" \
-              google-client-secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-              nextauth-secret="${{ secrets.NEXTAUTH_SECRET }}" \
-              resend-api-key="${{ secrets.RESEND_API_KEY }}" \
-              email-server-password="${{ secrets.EMAIL_SERVER_PASSWORD }}" \
-              slack-error-webhook-url="${{ secrets.SLACK_ERROR_WEBHOOK_URL }}" \
-              slack-webhook-url="${{ secrets.SLACK_WEBHOOK_URL }}" \
-              vercel-oidc-token="${{ secrets.VERCEL_OIDC_TOKEN }}" \
-              zoho-access-token="${{ secrets.ZOHO_ACCESS_TOKEN }}" \
-              zoho-client-id="${{ secrets.ZOHO_CLIENT_ID }}" \
-              zoho-client-secret="${{ secrets.ZOHO_CLIENT_SECRET }}" \
-              zoho-refresh-token="${{ secrets.ZOHO_REFRESH_TOKEN }}"
-          
-          # Update container app
-          az containerapp update \
-            --name $CONTAINER_APP_NAME \
-            --resource-group $RESOURCE_GROUP \
-            --image $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} \
-            --set-env-vars \
-              "NODE_ENV=production" \
-              "MONGODB_URI=secretref:mongodb-uri" \
-              "MONGODB_DB=hawkyai" \
-              "AWS_REGION=ap-south-1" \
-              "AWS_S3_BUCKET=hawky-ai-static-tryout" \
-              "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
-              "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
-              "ELASTICSEARCH_CLOUD_ID=h-staging-ES:Y2VudHJhbGluZGlhLmF6dXJlLmVsYXN0aWMtY2xvdWQuY29tOjkyNDMkYjA5NWRmNDQ1OWQxNGUwMWI3MjMwMDU3ZjkwNTNhZTYkMmYzNjJkZTkyNWRjNDAzMGJiODU5NzFmNGFkZDA0ODQ=" \
-              "ELASTICSEARCH_IMAGE_INDEX=image_competitors_analysis" \
-              "ELASTICSEARCH_VIDEO_INDEX=video_competitors_analysis" \
-              "ELASTICSEARCH_API_KEY=secretref:elasticsearch-api-key" \
-              "EMAIL_FROM=hawky.ai@gmail.com" \
-              "EMAIL_SERVER_HOST=smtp.example.com" \
-              "EMAIL_SERVER_PORT=587" \
-              "EMAIL_SERVER_USER=hawky.ai@gmail.com" \
-              "EMAIL_SERVER_PASSWORD=secretref:email-server-password" \
-              "GOOGLE_CLIENT_ID=896125824463-ru2dhbl8mtscj928kagc8346cl681k0b.apps.googleusercontent.com" \
-              "GOOGLE_CLIENT_SECRET=secretref:google-client-secret" \
-              "NEXTAUTH_URL=https://$CUSTOM_DOMAIN" \
-              "NEXTAUTH_SECRET=secretref:nextauth-secret" \
-              "RESEND_API_KEY=secretref:resend-api-key" \
-              "SLACK_ERROR_WEBHOOK_URL=secretref:slack-error-webhook-url" \
-              "SLACK_WEBHOOK_URL=secretref:slack-webhook-url" \
-              "VERCEL_OIDC_TOKEN=secretref:vercel-oidc-token" \
-              "ZOHO_ACCESS_TOKEN=secretref:zoho-access-token" \
-              "ZOHO_CLIENT_ID=secretref:zoho-client-id" \
-              "ZOHO_CLIENT_SECRET=secretref:zoho-client-secret" \
-              "ZOHO_REFRESH_TOKEN=secretref:zoho-refresh-token"
-          
-          echo "✅ Container App updated"
-        fi
+        echo "✅ Container App updated with new image"
     
     - name: 🔀 Enable Multiple Revisions
       run: |
@@ -236,4 +116,4 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Image:** \`$ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Secrets:** Stored directly in Container App (not using Key Vault)" >> $GITHUB_STEP_SUMMARY
+        echo "**Note:** Secrets are managed manually in Azure Portal" >> $GITHUB_STEP_SUMMARY
