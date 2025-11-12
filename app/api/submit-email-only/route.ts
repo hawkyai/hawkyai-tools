@@ -6,57 +6,28 @@ import { z } from "zod"
 // Slack webhook URL - Replace with your actual webhook URL
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL
 
-// Zoho CRM configuration
-const ZOHO_CLIENT_ID = process.env.ZOHO_CLIENT_ID
-const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET
-const ZOHO_DOMAIN = "https://www.zohoapis.in"
+// Attio CRM configuration
+const ATTIO_API_KEY = process.env.ATTIO_API_KEY
+const ATTIO_API_URL = "https://api.attio.com/v2"
+const ATTIO_DEAL_STAGE = "INBOUNDS"
+const ATTIO_DEAL_OWNER = "hawky@hawky.ai"
 
 // Form validation schema
 const formSchema = z.object({
     email: z.string().email(),
 })
 
-// Function to refresh Zoho token
-async function refreshZohoToken() {
-    try {
-        if (!ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
-            throw new Error('Missing required Zoho credentials for token refresh');
-        }
-        
-        const response = await fetch('https://accounts.zoho.in/oauth/v2/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                client_id: ZOHO_CLIENT_ID,
-                client_secret: ZOHO_CLIENT_SECRET,
-                grant_type: 'refresh_token',
-                refresh_token: process.env.ZOHO_REFRESH_TOKEN || ''
-            })
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data.access_token) {
-            throw new Error(`Token refresh failed: ${JSON.stringify(data)}`);
-        }
-
-        return data.access_token;
-    } catch (error) {
-        console.error('Token refresh failed:', error);
-        return null;
-    }
+type CRMResult<T = unknown> = {
+    success: boolean
+    data?: T
+    error?: string
+    alreadyExists?: boolean
 }
 
-// Function to initiate OAuth flow
-export async function GET(request: Request) {
-    const authUrl = `https://accounts.zoho.in/oauth/v2/auth?scope=ZohoCRM.modules.ALL&client_id=${ZOHO_CLIENT_ID}&response_type=code&access_type=offline&redirect_uri=http://localhost:3000/api/auth/callback`;
-    
-    return NextResponse.redirect(authUrl, {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-    });
+type EmailOnlyFormData = {
+    email: string
+    text?: string
+    [key: string]: unknown
 }
 
 // Function to handle OAuth callback and token exchange
@@ -64,20 +35,40 @@ export async function POST(request: Request) {
     try {
         // Debug environment variables
         console.log('Environment check:')
-        console.log('ZOHO_CLIENT_ID:', process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set')
-        console.log('ZOHO_CLIENT_SECRET:', process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set')
-        console.log('ZOHO_REFRESH_TOKEN:', process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set')
+        console.log('ATTIO_API_KEY:', process.env.ATTIO_API_KEY ? 'Set' : 'Not set')
 
         // Get form data from request
-        const formData = await request.json()
-        console.log("Received formData:", formData); // Debug log
+        const rawRequestData = await request.json()
+        console.log("Received formData:", rawRequestData); // Debug log
+
+        const validationResult = formSchema.safeParse(rawRequestData)
+        if (!validationResult.success) {
+            console.warn("Form data validation failed:", validationResult.error.flatten())
+            return NextResponse.json({
+                success: false,
+                error: "Invalid form submission",
+                issues: validationResult.error.flatten()
+            }, {
+                status: 400,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                },
+            })
+        }
+
+        const formData: EmailOnlyFormData = {
+            ...rawRequestData,
+            email: validationResult.data.email,
+            text: typeof rawRequestData?.text === 'string' ? rawRequestData.text : undefined,
+        }
 
         // Generate submission ID and timestamp
         const submissionId = uuidv4()
-        const timestamp = new Date().toISOString()
 
         // Check if this is a compliance checker email submission
-        const isComplianceCheckerSubmission = formData.text && formData.text.includes('compliance checker')
+        const isComplianceCheckerSubmission = typeof formData.text === 'string' && formData.text.includes('compliance checker')
 
         if (isComplianceCheckerSubmission) {
             // Handle compliance checker email submission - only send to Slack
@@ -108,27 +99,76 @@ export async function POST(request: Request) {
                 })
             }
         } else {
-            // Handle regular form submission - send to both Zoho and Slack
-            // Create lead in Zoho CRM
-            const zohoResult = await createZohoLead(formData, submissionId)
-            if (!zohoResult.success) {
-                console.error("Zoho CRM error:", zohoResult.error)
-                // Continue to Slack notification even if Zoho fails
-            }
-
-            // Send Slack notification
+            // Handle regular form submission - send to Attio and Slack
             const slackResult = await sendSlackNotification(formData, submissionId)
             if (!slackResult.success) {
                 console.error("Slack notification error:", slackResult.error)
             }
 
-            // Return success if either Zoho or Slack succeeded
-            if (zohoResult.success || slackResult.success) {
+            // Submit to Attio CRM when API key is available
+            const email = formData.email
+            const emailDomain = extractDomainFromEmail(email)
+            let attioCompanyResult: CRMResult | null = null
+            let attioPersonResult: CRMResult | null = null
+            let attioDealResult: CRMResult | null = null
+
+            if (ATTIO_API_KEY) {
+                if (emailDomain) {
+                    attioCompanyResult = await createAttioCompany(emailDomain, submissionId)
+                    if (!attioCompanyResult.success) {
+                        console.error("Attio Company CRM error:", attioCompanyResult.error)
+                    }
+                } else {
+                    console.warn("Unable to extract domain from email for Attio company creation")
+                }
+
+                attioPersonResult = await createAttioPerson(email, submissionId, emailDomain)
+                if (!attioPersonResult.success) {
+                    console.error("Attio Person CRM error:", attioPersonResult.error)
+                }
+
+                if (
+                    emailDomain &&
+                    attioPersonResult?.success &&
+                    attioCompanyResult?.success
+                ) {
+                    attioDealResult = await createAttioDeal(
+                        emailDomain,
+                        attioPersonResult.data,
+                        attioCompanyResult.data,
+                        submissionId
+                    )
+                    if (!attioDealResult.success) {
+                        console.error("Attio Deal CRM error:", attioDealResult.error)
+                    }
+                } else {
+                    if (!attioPersonResult?.success) {
+                        console.warn("Skipping Attio deal creation: person record unavailable")
+                    }
+                    if (!attioCompanyResult?.success) {
+                        console.warn("Skipping Attio deal creation: company record unavailable")
+                    }
+                }
+            } else {
+                console.warn("ATTIO_API_KEY not configured; skipping Attio CRM submission")
+            }
+
+            const attioSuccess =
+                Boolean(attioPersonResult?.success) ||
+                Boolean(attioCompanyResult?.success) ||
+                Boolean(attioDealResult?.success)
+
+            // Return success if any downstream system succeeded
+            if (slackResult.success || attioSuccess) {
                 return NextResponse.json({ 
                     success: true, 
-                    data: zohoResult.data,
-                    zohoSuccess: zohoResult.success,
-                    slackSuccess: slackResult.success
+                    slackSuccess: slackResult.success,
+                    attioPersonSuccess: attioPersonResult?.success ?? false,
+                    attioCompanySuccess: attioCompanyResult?.success ?? false,
+                    attioDealSuccess: attioDealResult?.success ?? false,
+                    attioPersonData: attioPersonResult?.data,
+                    attioCompanyData: attioCompanyResult?.data,
+                    attioDealData: attioDealResult?.data
                 }, {
                     headers: {
                         'Access-Control-Allow-Origin': '*',
@@ -139,9 +179,13 @@ export async function POST(request: Request) {
             } else {
                 return NextResponse.json({ 
                     success: false, 
-                    error: "Both Zoho CRM and Slack notifications failed",
-                    zohoError: zohoResult.error,
-                    slackError: slackResult.error
+                    error: "Both Attio CRM and Slack notifications failed",
+                    slackError: slackResult.error,
+                    attioErrors: {
+                        person: attioPersonResult?.error,
+                        company: attioCompanyResult?.error,
+                        deal: attioDealResult?.error
+                    }
                 }, { 
                     status: 500,
                     headers: {
@@ -182,60 +226,287 @@ export async function OPTIONS() {
     });
 }
 
-// Function to create a lead in Zoho CRM
-async function createZohoLead(formData: any, submissionId: string) {
-    try {
-        const accessToken = await refreshZohoToken();
-        if (!accessToken) {
-            throw new Error('Authentication failed: No valid token available. Please check your Zoho credentials.');
-        }
-        console.log('Using access token for API call:', accessToken ? 'Present' : 'Missing');
-        
-        // Prepare lead data according to v8 API structure
-        const leadData = {
-            data: [
-                {
-                    id: '1',
-                    Company: formData.company || '',
-                    Email: formData.email || '',
-                    Lead_Source: 'Website / Get Demo'
-                }
-            ],
-            trigger: [
-                'workflow'
-            ]
-        };
+/**
+ * Extracts the domain part from an email address.
+ * @param email - The email address received from the form.
+ * @returns The domain string or null when unavailable.
+ */
+function extractDomainFromEmail(email: string): string | null {
+    if (!email || typeof email !== 'string') {
+        return null;
+    }
+    const atIndex = email.indexOf('@');
+    if (atIndex === -1 || atIndex === email.length - 1) {
+        return null;
+    }
+    return email.slice(atIndex + 1).toLowerCase();
+}
 
-        console.log('Sending data to Zoho CRM:', JSON.stringify(leadData, null, 2));
-        const ZOHO_API_VERSION = "v8"
-        const ZOHO_MODULE = "Leads"
-        
-        // Use the new v8 API endpoint with all required headers
-        const response = await fetch(`${ZOHO_DOMAIN}/crm/${ZOHO_API_VERSION}/${ZOHO_MODULE}`, {
+/**
+ * Derives a human-readable name from an email local-part.
+ * @param email - The email address used to build the name.
+ * @returns A title-cased name string.
+ */
+function deriveNameFromEmail(email: string): string {
+    const localPart = email.split('@')[0] ?? '';
+    if (!localPart) {
+        return '';
+    }
+    const normalized = localPart.replace(/[._-]+/g, ' ').trim();
+    return normalized
+        .split(' ')
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+}
+
+/**
+ * Extracts the Attio record ID from an API response.
+ * @param data - The response payload returned by Attio.
+ * @returns The record identifier or null when missing.
+ */
+function extractRecordIdFromResponse(data: unknown): string | null {
+    if (!data || typeof data !== 'object') {
+        return null;
+    }
+    const candidate = data as {
+        data?: { id?: { record_id?: string } }
+        id?: { record_id?: string }
+    };
+    if (candidate.data?.id?.record_id) {
+        return candidate.data.id.record_id;
+    }
+    if (candidate.id?.record_id) {
+        return candidate.id.record_id;
+    }
+    return null;
+}
+
+/**
+ * Fetches an Attio company by domain.
+ * @param domain - The domain used to search within Attio.
+ */
+async function fetchCompanyByDomain(domain: string): Promise<CRMResult> {
+    try {
+        if (!ATTIO_API_KEY) {
+            return { success: false, error: 'No API key available' };
+        }
+        const response = await fetch(`${ATTIO_API_URL}/objects/companies/records?filter=domains.eq.${encodeURIComponent(domain)}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Accept': 'application/json'
+            }
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            return { success: false, error: `Failed to fetch company: ${response.status}` };
+        }
+        if (Array.isArray(result?.data) && result.data.length > 0) {
+            return { success: true, data: result.data[0] };
+        }
+        return { success: false, error: 'Company not found' };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+/**
+ * Fetches an Attio person by email address.
+ * @param email - The email used to search within Attio.
+ */
+async function fetchPersonByEmail(email: string): Promise<CRMResult> {
+    try {
+        if (!ATTIO_API_KEY) {
+            return { success: false, error: 'No API key available' };
+        }
+        const response = await fetch(`${ATTIO_API_URL}/objects/people/records?filter=email_addresses.eq.${encodeURIComponent(email)}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Accept': 'application/json'
+            }
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            return { success: false, error: `Failed to fetch person: ${response.status}` };
+        }
+        if (Array.isArray(result?.data) && result.data.length > 0) {
+            return { success: true, data: result.data[0] };
+        }
+        return { success: false, error: 'Person not found' };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+/**
+ * Creates or fetches a company record in Attio CRM.
+ * @param domain - The domain derived from the email address.
+ * @param submissionId - The unique submission identifier.
+ */
+async function createAttioCompany(domain: string, submissionId: string): Promise<CRMResult> {
+    try {
+        if (!ATTIO_API_KEY) {
+            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
+        }
+        const domainParts = domain.split('.');
+        const baseName = domainParts[0] ?? domain;
+        const companyName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+        const companyData = {
+            data: {
+                values: {
+                    name: companyName,
+                    domains: [domain],
+                    description: `Company created from email-only submission. Domain: ${domain}. Submission ID: ${submissionId}`
+                }
+            }
+        };
+        console.log('Sending company data to Attio CRM:', JSON.stringify(companyData, null, 2));
+        const response = await fetch(`${ATTIO_API_URL}/objects/companies/records`, {
             method: 'POST',
             headers: {
-                'Authorization': `Zoho-oauthtoken ${accessToken}`,
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-API-Version': ZOHO_API_VERSION,
-                'X-API-Module': ZOHO_MODULE,
-                'X-API-Scope': 'ZohoCRM.modules.ALL'
+                'Accept': 'application/json'
             },
-            body: JSON.stringify(leadData)
+            body: JSON.stringify(companyData)
         });
-
         const result = await response.json();
-        console.log('Zoho API response status:', response.status);
-        console.log('Zoho API response:', JSON.stringify(result, null, 2));
-        
+        console.log('Attio Company API response status:', response.status);
+        console.log('Attio Company API response:', JSON.stringify(result, null, 2));
         if (!response.ok) {
-            throw new Error(`Zoho API error: ${response.status} - ${JSON.stringify(result)}`);
+            if (response.status === 409 || response.status === 422) {
+                console.warn('Company may already exist in Attio. Fetching existing company...');
+                const existingCompany = await fetchCompanyByDomain(domain);
+                if (existingCompany.success) {
+                    return { success: true, data: existingCompany.data, alreadyExists: true };
+                }
+                console.warn('Could not retrieve existing company details; returning conflict payload.');
+                return { success: true, data: result, alreadyExists: true };
+            }
+            throw new Error(`Attio Company API error: ${response.status} - ${JSON.stringify(result)}`);
         }
-
-        console.log('Zoho CRM lead created successfully:', result);
+        console.log('Attio CRM company created successfully:', result);
         return { success: true, data: result };
     } catch (error) {
-        console.error('Error creating Zoho lead:', error);
+        console.error('Error creating Attio company:', error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+/**
+ * Creates or fetches a person record in Attio CRM.
+ * @param email - The lead email address.
+ * @param submissionId - The unique submission identifier.
+ * @param domain - Optional domain used for description context.
+ */
+async function createAttioPerson(email: string, submissionId: string, domain?: string | null): Promise<CRMResult> {
+    try {
+        if (!ATTIO_API_KEY) {
+            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
+        }
+        const derivedName = deriveNameFromEmail(email);
+        const personData = {
+            data: {
+                values: {
+                    email_addresses: [email],
+                    name: derivedName,
+                    phone_numbers: [],
+                }
+            }
+        };
+        console.log('Sending person data to Attio CRM:', JSON.stringify(personData, null, 2));
+        const response = await fetch(`${ATTIO_API_URL}/objects/people/records`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(personData)
+        });
+        const result = await response.json();
+        console.log('Attio Person API response status:', response.status);
+        console.log('Attio Person API response:', JSON.stringify(result, null, 2));
+        if (!response.ok) {
+            if (response.status === 409 || response.status === 422) {
+                console.warn('Person may already exist in Attio. Fetching existing person...');
+                const existingPerson = await fetchPersonByEmail(email);
+                if (existingPerson.success) {
+                    return { success: true, data: existingPerson.data, alreadyExists: true };
+                }
+                console.warn('Could not retrieve existing person details; returning conflict payload.');
+                return { success: true, data: result, alreadyExists: true };
+            }
+            throw new Error(`Attio Person API error: ${response.status} - ${JSON.stringify(result)}`);
+        }
+        console.log('Attio CRM person created successfully:', result);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error creating Attio person:', error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+/**
+ * Creates a deal record in Attio CRM linking person and company.
+ * @param domain - The email domain used as the deal name.
+ * @param personData - The Attio person response payload.
+ * @param companyData - The Attio company response payload.
+ * @param submissionId - The unique submission identifier.
+ */
+async function createAttioDeal(
+    domain: string,
+    personData: unknown,
+    companyData: unknown,
+    submissionId: string
+): Promise<CRMResult> {
+    try {
+        if (!ATTIO_API_KEY) {
+            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
+        }
+        const personRecordId = extractRecordIdFromResponse(personData);
+        const companyRecordId = extractRecordIdFromResponse(companyData);
+        if (!personRecordId || !companyRecordId) {
+            throw new Error('Cannot create deal: Missing person or company record ID');
+        }
+        const dealData = {
+            data: {
+                values: {
+                    name: domain,
+                    stage: ATTIO_DEAL_STAGE,
+                    owner: ATTIO_DEAL_OWNER,
+                    associated_people: [personRecordId],
+                    associated_company: companyRecordId,
+                    description: `Deal created from email-only submission. Submission ID: ${submissionId}`
+                }
+            }
+        };
+        console.log('Sending deal data to Attio CRM:', JSON.stringify(dealData, null, 2));
+        const response = await fetch(`${ATTIO_API_URL}/objects/deals/records`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${ATTIO_API_KEY}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(dealData)
+        });
+        const result = await response.json();
+        console.log('Attio Deal API response status:', response.status);
+        console.log('Attio Deal API response:', JSON.stringify(result, null, 2));
+        if (!response.ok) {
+            if (response.status === 409 || response.status === 422) {
+                console.warn('Deal may already exist in Attio or conflict encountered. Continuing...');
+                return { success: true, data: result, alreadyExists: true };
+            }
+            throw new Error(`Attio Deal API error: ${response.status} - ${JSON.stringify(result)}`);
+        }
+        console.log('Attio CRM deal created successfully:', result);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error creating Attio deal:', error);
         return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
@@ -256,7 +527,7 @@ async function sendSlackNotification(formData: any, submissionId: string) {
                     type: "header",
                     text: {
                         type: "plain_text",
-                        text: "🎉 New Diwali Form Submission",
+                        text: "🎉 New Vault Form Submission",
                         emoji: true
                     }
                 },
@@ -315,7 +586,7 @@ async function sendComplianceCheckerSlackNotification(formData: any, submissionI
                     type: "header",
                     text: {
                         type: "plain_text",
-                        text: "🔍 New Submition from Diwali Form",
+                        text: "🔍 New Submition from Vault form",
                         emoji: true
                     }
                 },
