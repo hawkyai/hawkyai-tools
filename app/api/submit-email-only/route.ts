@@ -9,8 +9,6 @@ const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL
 // Attio CRM configuration
 const ATTIO_API_KEY = process.env.ATTIO_API_KEY
 const ATTIO_API_URL = "https://api.attio.com/v2"
-const ATTIO_DEAL_STAGE = "INBOUNDS"
-const ATTIO_DEAL_OWNER = "hawky@hawky.ai"
 
 // Form validation schema
 const formSchema = z.object({
@@ -110,7 +108,6 @@ export async function POST(request: Request) {
             const emailDomain = extractDomainFromEmail(email)
             let attioCompanyResult: CRMResult | null = null
             let attioPersonResult: CRMResult | null = null
-            let attioDealResult: CRMResult | null = null
 
             if (ATTIO_API_KEY) {
                 if (emailDomain) {
@@ -126,37 +123,13 @@ export async function POST(request: Request) {
                 if (!attioPersonResult.success) {
                     console.error("Attio Person CRM error:", attioPersonResult.error)
                 }
-
-                if (
-                    emailDomain &&
-                    attioPersonResult?.success &&
-                    attioCompanyResult?.success
-                ) {
-                    attioDealResult = await createAttioDeal(
-                        emailDomain,
-                        attioPersonResult.data,
-                        attioCompanyResult.data,
-                        submissionId
-                    )
-                    if (!attioDealResult.success) {
-                        console.error("Attio Deal CRM error:", attioDealResult.error)
-                    }
-                } else {
-                    if (!attioPersonResult?.success) {
-                        console.warn("Skipping Attio deal creation: person record unavailable")
-                    }
-                    if (!attioCompanyResult?.success) {
-                        console.warn("Skipping Attio deal creation: company record unavailable")
-                    }
-                }
             } else {
                 console.warn("ATTIO_API_KEY not configured; skipping Attio CRM submission")
             }
 
             const attioSuccess =
                 Boolean(attioPersonResult?.success) ||
-                Boolean(attioCompanyResult?.success) ||
-                Boolean(attioDealResult?.success)
+                Boolean(attioCompanyResult?.success)
 
             // Return success if any downstream system succeeded
             if (slackResult.success || attioSuccess) {
@@ -165,10 +138,8 @@ export async function POST(request: Request) {
                     slackSuccess: slackResult.success,
                     attioPersonSuccess: attioPersonResult?.success ?? false,
                     attioCompanySuccess: attioCompanyResult?.success ?? false,
-                    attioDealSuccess: attioDealResult?.success ?? false,
                     attioPersonData: attioPersonResult?.data,
-                    attioCompanyData: attioCompanyResult?.data,
-                    attioDealData: attioDealResult?.data
+                    attioCompanyData: attioCompanyResult?.data
                 }, {
                     headers: {
                         'Access-Control-Allow-Origin': '*',
@@ -183,8 +154,7 @@ export async function POST(request: Request) {
                     slackError: slackResult.error,
                     attioErrors: {
                         person: attioPersonResult?.error,
-                        company: attioCompanyResult?.error,
-                        deal: attioDealResult?.error
+                        company: attioCompanyResult?.error
                     }
                 }, { 
                     status: 500,
@@ -376,7 +346,8 @@ async function createAttioCompany(domain: string, submissionId: string): Promise
         console.log('Attio Company API response status:', response.status);
         console.log('Attio Company API response:', JSON.stringify(result, null, 2));
         if (!response.ok) {
-            if (response.status === 409 || response.status === 422) {
+            const isUniquenessConflict = result?.code === 'uniqueness_conflict';
+            if (response.status === 409 || response.status === 422 || isUniquenessConflict) {
                 console.warn('Company may already exist in Attio. Fetching existing company...');
                 const existingCompany = await fetchCompanyByDomain(domain);
                 if (existingCompany.success) {
@@ -430,7 +401,8 @@ async function createAttioPerson(email: string, submissionId: string, domain?: s
         console.log('Attio Person API response status:', response.status);
         console.log('Attio Person API response:', JSON.stringify(result, null, 2));
         if (!response.ok) {
-            if (response.status === 409 || response.status === 422) {
+            const isUniquenessConflict = result?.code === 'uniqueness_conflict';
+            if (response.status === 409 || response.status === 422 || isUniquenessConflict) {
                 console.warn('Person may already exist in Attio. Fetching existing person...');
                 const existingPerson = await fetchPersonByEmail(email);
                 if (existingPerson.success) {
@@ -445,68 +417,6 @@ async function createAttioPerson(email: string, submissionId: string, domain?: s
         return { success: true, data: result };
     } catch (error) {
         console.error('Error creating Attio person:', error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
-}
-
-/**
- * Creates a deal record in Attio CRM linking person and company.
- * @param domain - The email domain used as the deal name.
- * @param personData - The Attio person response payload.
- * @param companyData - The Attio company response payload.
- * @param submissionId - The unique submission identifier.
- */
-async function createAttioDeal(
-    domain: string,
-    personData: unknown,
-    companyData: unknown,
-    submissionId: string
-): Promise<CRMResult> {
-    try {
-        if (!ATTIO_API_KEY) {
-            throw new Error('Authentication failed: No API key available. Please check your Attio credentials.');
-        }
-        const personRecordId = extractRecordIdFromResponse(personData);
-        const companyRecordId = extractRecordIdFromResponse(companyData);
-        if (!personRecordId || !companyRecordId) {
-            throw new Error('Cannot create deal: Missing person or company record ID');
-        }
-        const dealData = {
-            data: {
-                values: {
-                    name: domain,
-                    stage: ATTIO_DEAL_STAGE,
-                    owner: ATTIO_DEAL_OWNER,
-                    associated_people: [personRecordId],
-                    associated_company: companyRecordId,
-                    description: `Deal created from email-only submission. Submission ID: ${submissionId}`
-                }
-            }
-        };
-        console.log('Sending deal data to Attio CRM:', JSON.stringify(dealData, null, 2));
-        const response = await fetch(`${ATTIO_API_URL}/objects/deals/records`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${ATTIO_API_KEY}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(dealData)
-        });
-        const result = await response.json();
-        console.log('Attio Deal API response status:', response.status);
-        console.log('Attio Deal API response:', JSON.stringify(result, null, 2));
-        if (!response.ok) {
-            if (response.status === 409 || response.status === 422) {
-                console.warn('Deal may already exist in Attio or conflict encountered. Continuing...');
-                return { success: true, data: result, alreadyExists: true };
-            }
-            throw new Error(`Attio Deal API error: ${response.status} - ${JSON.stringify(result)}`);
-        }
-        console.log('Attio CRM deal created successfully:', result);
-        return { success: true, data: result };
-    } catch (error) {
-        console.error('Error creating Attio deal:', error);
         return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
