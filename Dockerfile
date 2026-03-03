@@ -42,6 +42,8 @@ ENV ZOHO_ACCESS_TOKEN="dummy"
 ENV ZOHO_CLIENT_ID="dummy"
 ENV ZOHO_CLIENT_SECRET="dummy"
 ENV ZOHO_REFRESH_TOKEN="dummy"
+ENV AZURE_OPENAI_ENDPOINT="https://dummy.openai.azure.com/openai/deployments/dummy/chat/completions?api-version=2024-08-01-preview"
+ENV AZURE_OPENAI_API_KEY="dummy"
 
 RUN npm run build
 

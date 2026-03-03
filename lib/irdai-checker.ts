@@ -1,6 +1,5 @@
-const ENDPOINT =
-  "https://ai-riderhailingappai1824849404910565.openai.azure.com/openai/deployments/gpt-4o-rider-beta/chat/completions?api-version=2024-08-01-preview"
-const API_KEY = "44be3ea1f359415fb95bbe350580e1c2"
+const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT!
+const API_KEY = process.env.AZURE_OPENAI_API_KEY!
 
 const system = `You are a highly trained advertising compliance reviewer with deep expertise in regulatory, ethical, and platform-specific guidelines for advertisements, including IRDAI norms where applicable.
 

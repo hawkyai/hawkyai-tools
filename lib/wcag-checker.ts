@@ -1,6 +1,5 @@
-const ENDPOINT =
-  "https://ai-riderhailingappai1824849404910565.openai.azure.com/openai/deployments/gpt-4o-rider-beta/chat/completions?api-version=2024-08-01-preview";
-const API_KEY = "44be3ea1f359415fb95bbe350580e1c2";
+const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT!
+const API_KEY = process.env.AZURE_OPENAI_API_KEY!
 
 const system = `You are an expert in accessibility compliance, specifically WCAG 2.1 standards. Your task is to evaluate digital image advertisements for accessibility issues with extreme precision and thoroughness. You have deep knowledge of all WCAG success criteria and how they apply to digital advertisements.
 

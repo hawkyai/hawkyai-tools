@@ -1,6 +1,5 @@
-const ENDPOINT =
-  "https://ai-riderhailingappai1824849404910565.openai.azure.com/openai/deployments/gpt-4o-rider-beta/chat/completions?api-version=2024-08-01-preview"
-const API_KEY = "44be3ea1f359415fb95bbe350580e1c2"
+const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT!
+const API_KEY = process.env.AZURE_OPENAI_API_KEY!
 
 const system = `You are an expert in financial advertisement regulations and must evaluate the following advertisement image for compliance with financial advertisement guidelines, particularly for issue advertisements (IPOs, securities offerings, etc.). Use the criteria below to analyze regulatory, ethical, and content-based violations in visual layout, claims, disclosures, or message tone.
 
