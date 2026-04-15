@@ -84,6 +84,49 @@ function extractNameFromLinkedInUrl(url: string): string {
 }
 
 /**
+ * Generates an AI suggested reply using Gemini
+ */
+async function generateGeminiReply(content: string, leadName: string): Promise<string | null> {
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+        console.warn("⚠️ GEMINI_API_KEY not configured")
+        return null
+    }
+
+    const prompt = `You are a professional sales assistant helping with LinkedIn outreach.
+A lead named "${leadName}" replied with this message:
+
+"${content}"
+
+Write a short, friendly, professional reply (2-3 sentences max).
+Return ONLY the reply text — no subject line, no preamble, no sign-off.`
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                }),
+            }
+        )
+
+        if (!response.ok) {
+            console.error("Gemini API error:", response.status, await response.text())
+            return null
+        }
+
+        const data = await response.json()
+        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? null
+    } catch (error) {
+        console.error("❌ Error calling Gemini API:", error)
+        return null
+    }
+}
+
+/**
  * Formats the event type for display
  */
 function formatEventType(eventType: string): { emoji: string; title: string } {
@@ -102,7 +145,7 @@ function formatEventType(eventType: string): { emoji: string; title: string } {
 /**
  * Builds human-readable Slack message from Prosp webhook data
  */
-function buildSlackMessage(data: ProspWebhookData) {
+function buildSlackMessage(data: ProspWebhookData, aiReply?: string) {
     const { eventType, eventData } = data
     const { emoji, title } = formatEventType(eventType)
     const profileInfo = eventData.profileInfo || {}
@@ -269,13 +312,72 @@ function buildSlackMessage(data: ProspWebhookData) {
         elements: contextElements,
     })
 
+    // Add AI suggested reply + action buttons for has_msg_replied events
+    if (aiReply) {
+        const buttonValue = JSON.stringify({
+            lead: eventData.lead,
+            leadName,
+            campaignId: eventData.campaignId,
+            campaignName: eventData.campaignName,
+            sender: eventData.sender,
+            aiReply,
+            content: eventData.content,
+            linkedinUrl: profileInfo.linkedinUrl,
+            jobTitle: profileInfo.jobTitle,
+            company: profileInfo.company,
+            email: profileInfo.email,
+            headline: profileInfo.headline,
+            timestamp: eventData.timestamp,
+        })
+
+        blocks.push({
+            type: "divider",
+        })
+
+        blocks.push({
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `*🤖 AI Suggested Reply:*\n${aiReply}`,
+            },
+        })
+
+        blocks.push({
+            type: "actions",
+            elements: [
+                {
+                    type: "button",
+                    text: { type: "plain_text", text: "✅ Send This Reply", emoji: true },
+                    style: "primary",
+                    action_id: "send_ai_reply",
+                    value: buttonValue,
+                    confirm: {
+                        title: { type: "plain_text", text: "Send this reply?" },
+                        text: {
+                            type: "mrkdwn",
+                            text: `This will send the AI-suggested message to *${leadName}* via Prosp.`,
+                        },
+                        confirm: { type: "plain_text", text: "Yes, Send It" },
+                        deny: { type: "plain_text", text: "Cancel" },
+                    },
+                },
+                {
+                    type: "button",
+                    text: { type: "plain_text", text: "✏️ Edit & Send", emoji: true },
+                    action_id: "edit_reply",
+                    value: buttonValue,
+                },
+            ],
+        })
+    }
+
     return { blocks }
 }
 
 /**
  * Sends notification to Slack
  */
-async function sendSlackNotification(data: ProspWebhookData) {
+async function sendSlackNotification(data: ProspWebhookData, aiReply?: string) {
     if (!PROSP_SLACK_WEBHOOK_URL) {
         console.warn("⚠️ PROSP_SLACK_WEBHOOK_URL environment variable not configured")
         return { 
@@ -285,7 +387,7 @@ async function sendSlackNotification(data: ProspWebhookData) {
     }
 
     try {
-        const message = buildSlackMessage(data)
+        const message = buildSlackMessage(data, aiReply)
         console.log("📤 Sending message to Slack...")
 
         const slackRes = await fetch(PROSP_SLACK_WEBHOOK_URL, {
@@ -471,8 +573,20 @@ export async function POST(request: Request) {
 
         const webhookData = validationResult.data
 
+        // Generate AI suggested reply for incoming lead replies
+        let aiReply: string | undefined
+        if (webhookData.eventType === "has_msg_replied" && webhookData.eventData.content) {
+            const profileInfo = webhookData.eventData.profileInfo || {}
+            const leadName = profileInfo.firstName && profileInfo.lastName
+                ? `${profileInfo.firstName} ${profileInfo.lastName}`
+                : profileInfo.firstName || profileInfo.lastName || "Unknown"
+
+            const reply = await generateGeminiReply(webhookData.eventData.content, leadName)
+            if (reply) aiReply = reply
+        }
+
         // Send to Slack
-        const slackResult = await sendSlackNotification(webhookData)
+        const slackResult = await sendSlackNotification(webhookData, aiReply)
 
         if (slackResult.success) {
             return NextResponse.json(
