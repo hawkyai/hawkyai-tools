@@ -1,8 +1,49 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-// Slack webhook URL - Replace with your actual webhook URL
+// Slack webhook URL
 const PROSP_SLACK_WEBHOOK_URL = process.env.PROSP_SLACK_WEBHOOK_URL
+
+// Error alert Slack webhook
+const ERROR_SLACK_WEBHOOK_URL = process.env.ERROR_SLACK_WEBHOOK_URL
+
+/**
+ * Sends an error alert to the error Slack channel
+ */
+async function sendErrorAlert(title: string, details: string, context?: string) {
+    if (!ERROR_SLACK_WEBHOOK_URL) return
+    try {
+        await fetch(ERROR_SLACK_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                blocks: [
+                    {
+                        type: "header",
+                        text: { type: "plain_text", text: `🚨 Prosp Webhook Error`, emoji: true },
+                    },
+                    {
+                        type: "section",
+                        fields: [
+                            { type: "mrkdwn", text: `*Error:*\n${title}` },
+                            { type: "mrkdwn", text: `*Time:*\n${new Date().toLocaleString("en-US", { timeZoneName: "short" })}` },
+                        ],
+                    },
+                    {
+                        type: "section",
+                        text: { type: "mrkdwn", text: `*Details:*\n\`\`\`${details}\`\`\`` },
+                    },
+                    ...(context ? [{
+                        type: "section",
+                        text: { type: "mrkdwn", text: `*Context:*\n${context}` },
+                    }] : []),
+                ],
+            }),
+        })
+    } catch (err) {
+        console.error("❌ Failed to send error alert to Slack:", err)
+    }
+}
 
 // Prosp webhook validation schema
 const prospWebhookSchema = z.object({
@@ -90,6 +131,11 @@ async function generateGeminiReply(content: string, leadName: string): Promise<s
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
         console.warn("⚠️ GEMINI_API_KEY not configured")
+        await sendErrorAlert(
+            "GEMINI_API_KEY not configured",
+            "The GEMINI_API_KEY environment variable is missing on this server.",
+            `Lead: ${leadName}\nMessage: ${content.substring(0, 100)}...`
+        )
         return null
     }
 
@@ -114,14 +160,36 @@ Return ONLY the reply text — no subject line, no preamble, no sign-off.`
         )
 
         if (!response.ok) {
-            console.error("Gemini API error:", response.status, await response.text())
+            const errText = await response.text()
+            console.error("Gemini API error:", response.status, errText)
+            await sendErrorAlert(
+                `Gemini API returned ${response.status}`,
+                errText,
+                `Lead: ${leadName}`
+            )
             return null
         }
 
         const data = await response.json()
-        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? null
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? null
+
+        if (!reply) {
+            await sendErrorAlert(
+                "Gemini returned empty response",
+                JSON.stringify(data, null, 2).substring(0, 500),
+                `Lead: ${leadName}`
+            )
+        }
+
+        return reply
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
         console.error("❌ Error calling Gemini API:", error)
+        await sendErrorAlert(
+            "Gemini API call failed (network/exception)",
+            message,
+            `Lead: ${leadName}`
+        )
         return null
     }
 }
@@ -606,6 +674,11 @@ export async function POST(request: Request) {
             // Return 200 with warning instead of 500, so webhook is still considered processed
             // This prevents Prosp from retrying the webhook
             console.warn("⚠️ Webhook received but Slack notification failed:", slackResult.error)
+            await sendErrorAlert(
+                "Slack notification failed",
+                slackResult.error ?? "Unknown error",
+                `Event: ${webhookData.eventType} · Lead: ${webhookData.eventData.lead ?? "unknown"}`
+            )
             return NextResponse.json(
                 {
                     success: true,
@@ -626,6 +699,11 @@ export async function POST(request: Request) {
     } catch (error: any) {
         console.error("Server error processing Prosp webhook:", error)
         const errorMessage = error instanceof Error ? error.message : String(error)
+        await sendErrorAlert(
+            "Unhandled server error in prosp-response",
+            errorMessage,
+            error instanceof Error ? error.stack?.substring(0, 500) : undefined
+        )
         return NextResponse.json(
             {
                 success: false,
