@@ -643,7 +643,7 @@ export async function POST(request: Request) {
 
         // Generate AI suggested reply for incoming lead replies
         let aiReply: string | undefined
-        if (webhookData.eventType === "has_msg_replied" && webhookData.eventData.content) {
+        if (webhookData.eventData.content) {
             const profileInfo = webhookData.eventData.profileInfo || {}
             const leadName = profileInfo.firstName && profileInfo.lastName
                 ? `${profileInfo.firstName} ${profileInfo.lastName}`
