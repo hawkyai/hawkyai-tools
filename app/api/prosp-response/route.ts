@@ -10,6 +10,7 @@ const ERROR_SLACK_WEBHOOK_URL = process.env.ERROR_SLACK_WEBHOOK_URL
 /**
  * Sends an error alert to the error Slack channel
  */
+
 async function sendErrorAlert(title: string, details: string, context?: string) {
     if (!ERROR_SLACK_WEBHOOK_URL) return
     try {
@@ -313,10 +314,10 @@ function buildSlackMessage(data: ProspWebhookData, aiReply?: string) {
         } else if (eventType === "send_msg") {
             contentLabel = "Message Content"
         }
-        
+
         // Clean up the content - replace escaped newlines with actual newlines for better readability
         let displayContent = eventData.content.replace(/\\n/g, "\n").trim()
-        
+
         blocks.push({
             type: "section",
             text: {
@@ -448,9 +449,9 @@ function buildSlackMessage(data: ProspWebhookData, aiReply?: string) {
 async function sendSlackNotification(data: ProspWebhookData, aiReply?: string) {
     if (!PROSP_SLACK_WEBHOOK_URL) {
         console.warn("⚠️ PROSP_SLACK_WEBHOOK_URL environment variable not configured")
-        return { 
-            success: false, 
-            error: "Slack webhook URL not configured. Please set PROSP_SLACK_WEBHOOK_URL environment variable." 
+        return {
+            success: false,
+            error: "Slack webhook URL not configured. Please set PROSP_SLACK_WEBHOOK_URL environment variable."
         }
     }
 
@@ -473,13 +474,13 @@ async function sendSlackNotification(data: ProspWebhookData, aiReply?: string) {
         if (!slackRes.ok) {
             // Provide more helpful error messages based on status code
             let errorMessage = `Slack webhook failed: ${slackRes.status} - ${slackText}`
-            
+
             if (slackRes.status === 403) {
                 errorMessage = "Slack webhook authentication failed. Please check that PROSP_SLACK_WEBHOOK_URL contains a valid webhook URL."
             } else if (slackRes.status === 404) {
                 errorMessage = "Slack webhook URL not found. Please verify the webhook URL is correct."
             }
-            
+
             throw new Error(errorMessage)
         }
 
@@ -502,7 +503,7 @@ export async function POST(request: Request) {
         // Get raw text first to handle potential JSON parsing issues
         let rawData: any
         const rawText = await request.text()
-        
+
         if (!rawText || rawText.trim().length === 0) {
             return NextResponse.json(
                 {
@@ -519,38 +520,38 @@ export async function POST(request: Request) {
                 }
             )
         }
-        
+
         try {
             rawData = JSON.parse(rawText)
         } catch (jsonError: any) {
             console.error("❌ JSON parsing error:", jsonError.message)
             console.error("📄 Raw request body length:", rawText.length)
             console.error("📄 Raw request body (first 1000 chars):", rawText.substring(0, 1000))
-            
+
             // Try to fix common JSON issues - handle unescaped quotes and newlines in string values
             try {
                 let fixedJson = rawText
                 let inString = false
                 let escapeNext = false
                 let result = ''
-                
+
                 // Parse character by character and fix unescaped special characters in strings
                 for (let i = 0; i < fixedJson.length; i++) {
                     const char = fixedJson[i]
-                    
+
                     if (escapeNext) {
                         // Current char is escaped, add it as-is
                         result += char
                         escapeNext = false
                         continue
                     }
-                    
+
                     if (char === '\\') {
                         result += char
                         escapeNext = true
                         continue
                     }
-                    
+
                     // Handle quote
                     if (char === '"') {
                         if (inString) {
@@ -572,7 +573,7 @@ export async function POST(request: Request) {
                         }
                         continue
                     }
-                    
+
                     if (inString) {
                         // Inside a string value - escape unescaped control characters
                         if (char === '\n') {
@@ -589,7 +590,7 @@ export async function POST(request: Request) {
                         result += char
                     }
                 }
-                
+
                 fixedJson = result
                 rawData = JSON.parse(fixedJson)
                 console.log("✅ Successfully parsed JSON after fixing unescaped characters")
@@ -615,7 +616,7 @@ export async function POST(request: Request) {
                 )
             }
         }
-        
+
         console.log("Received Prosp webhook data:", JSON.stringify(rawData, null, 2))
 
         // Validate the incoming data
